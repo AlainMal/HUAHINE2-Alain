@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}Aide - Accueil{% endblock %}
+
+{% block content %}
+<style>
+    nav #accueil {
+    background-color: red;
+}
+</style>
+    <div class="container">
+        <h1>Guide d'utilisation - HUAHINE</h1>
+<div class="map-preview">
+    <img src="{{ url_for('static', filename='images/ecran.png') }}"
+         alt="Aperçu de la carte"
+         style="width: 50%;
+                max-height: 600px;
+                object-fit: cover;
+                margin: 0 auto 20px auto;
+                border-radius: 8px;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                display: block;">
+</div>
+        <div class="section">
+            <h2>Introduction</h2>
+            <p>Bienvenue dans le guide d'utilisation de HUAHINE. Cette application vous permet de gérer et visualiser vos données géographiques.</p>
+        </div>
+
+        <div class="section">
+            <h2>Fonctionnalités principales</h2>
+    <ul>
+        <li>Visualisation de cartes</li>
+        <li>Importer les données du bus CAN sur la table</li>
+        <li>Exporter le résultat en CSV sur NMEA 2000</li>
+    </ul>
+
+        </div>
+
+        <div class="section">
+            <h2>Comment utiliser l'application</h2>
+            <ol>
+                <li>Lancez l'application</li>
+                <li>Raccordez l'adaptateur sur un port USB</li>
+                <li>Raccordez sur le bus CAN le H et L</li>
+                <li>Cliquez sur le bouton "OPEN"</li>
+                <li>Cliquez sur le bouton "Lecture du bus CAN"</li>
+                <li>Vous pouvez voir votre position sur la carte</li>
+            </ol>
+
+            <h2>Enregister et importer</h2>
+            <ol>
+                <li>Cliquez sur le bouton ouvrir le fichier texte</li>
+                <li>Enregistrez le bus CAN en cochant la case à cocher</li>
+                <li>Vous vous arrêtez quand vous voulez</li>
+                <li>Cliquez sur le bouton "Importer le fichier CAN"</li>
+                <li>Vous pouvez voir sur la table les différentes lignes importées</li>
+                <li>Cliquez sur la table et vous voyez le résultat en NMEA 2000 sur la gauche</li>
+            </ol>
+
+            <h2>Exporter le NMEA 2000</h2>
+            <ol>
+                <li>Cliquez sur le bouton "Exporter en NMEA 2000"</li>
+                <li>Choisissez votre fichier au format .csv</li>
+                <li>Enregistrez puis vous validez ou choisissez d'autres lignes à exporter</li>
+                <li>Vous pouvez voir le fichier en .csv en cliquant sur "Yes"</li>
+            </ol>
+        </div>
+
+        <div class="tip">
+            <strong>Astuce :</strong> Utilisez la touche F1 à tout moment pour accéder à l'aide.
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}Aide - Enreistrement{% endblock %}
+
+{% block content %}
+<style>
+    nav #enregistre {
+    background-color: red;
+}
+</style>
+<h1>Enregistrer</h1>
+
+<div class="section">
+    <h2>Comment enregistrer les données du bus CAN</h2>
+    <ol>
+        <li>Cliquez sur "Ouvrir d'un fichier texte" dans la barre d'outils.
+            <ul>
+                <li>Entrez le nom du fichier .txt.</li>
+                <li>Cliquer sur 'Enregistrer'.<br></li>
+            </ul>
+        </li>
+
+        <li>Cochez la case à cocher "Enregister le bus CAN sur le fichier".</li>
+        <li>Cliquez sur le bouton marqué "Open" dans la barre d'outils.</li>
+        <li>Cliquez sur le bouton bleu dans la barre d'outils.</li>
+            <ul>
+                <li>Vous voyez le nombre de trames enregistrées sur l'écran</li>
+            </ul>
+        <li>Vous arrêtez quand vous voulez.<br></li>
+        <li>Cliquez sur bouton en forme de livre sur la barre d'outils pour visualiser le fichier</li>
+    </ol>
+<br>
+    <div class="tip">
+        <strong>Remarque :</strong> Vous voyez le nombre de trames enregistrés sur l'écran.
+    </div>
+    <ul>
+        <li>Voyez un exemple du fichier rempli.<br></li>
+
+        Vous voyez le TimeStamp en ms, l'ID, la longueur et les datas
+    </ul>
+     <div class="map-preview">
+    <img src="{{ url_for('static', filename='images/fichier.png') }}"
+         alt="Fichier texet"
+         style="width: 50%;
+                max-height: 600px;
+                object-fit: cover;
+                margin: 0 auto 20px auto;
+                border-radius: 8px;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                display: block;">
+    </div>
+
+    <h3>Formats supportés</h3>
+    <ul>
+        <li>Fichiers .txt</li>
+    </ul>
+</div>
+
+<script>
+// JavaScript spécifique à la page d'import si nécessaire
+document.addEventListener('DOMContentLoaded', function() {
+    // Votre code JavaScript ici
+});
+</script>
+{% endblock %}

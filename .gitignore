@@ -1,0 +1,33 @@
+# Fichiers Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environnements virtuels
+.venv/
+venv/
+env/
+.env/
+
+# Exclusion des fichiers mbtiles
+*.mbtiles
+# Exclusion spécifique
+static/cartes.mbtiles
+
+
+# Fichiers IDE
+.idea/
+.vscode/
+
+# Fichiers système
+.DS_Store
+Thumbs.db
+
+# Fichiers de log
+*.log
+
+# Fichiers de données volumineux si nécessaire
+*.csv
+*.xlsx
+*.db
+*.pptx

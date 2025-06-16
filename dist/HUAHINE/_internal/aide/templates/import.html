@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}Aide - Importer{% endblock %}
+
+{% block content %}
+<style>
+    nav #import {
+    background-color: red;
+}
+</style>
+<h1>Importer</h1>
+
+<div class="section">
+    <h2>Comment importer les données du bus CAN</h2>
+    <ol>
+        <li>Cliquez sur "Ouvrir un fichier texte" dans la barre d'outils.
+            <ul>
+                <li>Choisissez un fichier éxistant.</li>
+                <li>Cliquer sur 'Enregistrer'.<br></li>
+            </ul>
+        </li>
+
+        <li>Cliquez sur importer le fichier texte dans la barre d'outils.
+            <ul>
+                <li>Vous avez la possibilité de valider, ou de choisir les numéros des lignes.<br></li>
+            </ul>
+        </li>
+
+        <li>Vous avez à présent la possibilité de cliquez sur la table.
+            <ul>
+                <li>Vous verrez alors les résultats de la conversion en NMEA 2000.<br></li>
+            </ul>
+        </li>
+    </ol>
+
+    <div class="tip">
+        <strong>Remarque :</strong> Si vous créez un nouveau fichier, il ne se passera rien, il faudra d'abord l'enregistrer.
+    </div>
+    <ul>
+                <li>Voyez un exemple du table rempli.</li>
+    </ul>
+     <div class="map-preview">
+    <img src="{{ url_for('static', filename='images/ecran.png') }}"
+         alt="Aperçu de la carte"
+         style="width: 100%;
+                max-height: 600px;
+                object-fit: cover;
+                margin: 0 auto 20px auto;
+                border-radius: 8px;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                display: block;">
+    </div>
+
+    <h3>Formats supportés</h3>
+    <ul>
+        <li>Fichiers .txt</li>
+    </ul>
+</div>
+
+<script>
+// JavaScript spécifique à la page d'import si nécessaire
+document.addEventListener('DOMContentLoaded', function() {
+    // Votre code JavaScript ici
+});
+</script>
+{% endblock %}
