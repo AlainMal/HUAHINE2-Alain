@@ -879,11 +879,13 @@ quart_app = Quart(__name__,
                   static_folder='static',
                   template_folder='templates')
 
+
+
 # Coordonnées centrées sur le port de la pointe rouge
 DEFAULT_CONFIG = {
     "center": {
-        "latitude": 43.243,
-        "longitude": 5.365,
+        "latitude": 43.2438,
+        "longitude": 5.3656,
         "zoom": 8
     },
     "bounds": {
@@ -893,10 +895,47 @@ DEFAULT_CONFIG = {
 }
 
 
+@quart_app.route('/get_ships')
+async def get_ships():
+    # Exemple de données de test
+    ships = [
+        {
+            "mmsi": str(123456789),
+            "name": "BELLE BRISE",
+            "latitude": 43.3,  # Près de Marseille
+            "longitude": 5.4,
+            "heading": 90,
+            "sog": 12.5  # Vitesse en nœuds
+        },
+        {
+            "mmsi": "987654321",
+            "latitude": 43.25,
+            "longitude": 5.35,
+            "heading": 180,
+            "sog": 8.3
+        },
+        {
+            "mmsi": "456789123",
+            "latitude": 43.28,
+            "longitude": 5.38,
+            "heading": 270,
+            "sog": 15.7
+        }
+    ]
+
+    # Pour déboguer, affichons les données dans la console
+    print("Envoi des données AIS:", ships)
+
+    return jsonify(ships)
+
 @quart_app.route('/')
 @quart_app.route('/map')
 async def map_page():
     try:
+        # Ajout du logging ici
+        logging.info(
+            f"Coordonnées envoyées : {DEFAULT_CONFIG['center']['latitude']}, {DEFAULT_CONFIG['center']['longitude']}")
+
         conn = sqlite3.connect('static/cartes.mbtiles')
         cursor = conn.cursor()
 
@@ -950,12 +989,7 @@ async def after_request(response):
     response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
     response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE')
     return response
-
-# Routes pour l'application web
-@quart_app.route('/')
-async def index():
-    return await render_template('index.html')
-
+import logging
 
 @quart_app.route('/api/get_coordinates')
 async def get_coordinates():

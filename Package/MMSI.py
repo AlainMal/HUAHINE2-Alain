@@ -1,3 +1,13 @@
+class AISData:
+    def __init__(self, mmsi, latitude, longitude, heading):
+        self.mmsi = mmsi
+        self.latitude = latitude
+        self.longitude = longitude
+        self.heading = heading
+
+
+
+
 # Classe permettant de lister les MMSI en temps réel.
 class MMSI:
     def __init__(self,pgn):

@@ -22,6 +22,35 @@
             padding: 10px;
             border-radius: 4px;
         }
+        .ship-marker {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .ship-icon {
+            font-size: 24px;
+            transform: rotate(0deg);
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 255, 0.6);
+            border-radius: 50%;
+            border: 2px solid white;
+            color: white;
+        }
+        .ship-icon {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ship-icon svg {
+    filter: drop-shadow(0px 0px 2px rgba(0,0,0,0.5));
+}
     </style>
 </head>
 <body>
@@ -30,28 +59,32 @@
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        // Position initiale
-        const initialPosition = [43.243757, 5.365660];
+        const initialPosition = [43.2438, 5.3656];
+        //const initialPosition = [{{ center_lat }}, {{ center_lon }}];
+console.log('Position initiale:', initialPosition);
+
 
         var map = L.map('map', {
+            center: initialPosition,
             zoomSnap: 1,
             zoomDelta: 1,
-            minZoom: 3,
-            maxZoom: 18
-        }).setView(initialPosition, 9);
+            minZoom: {{ min_zoom }},
+            maxZoom: {{ max_zoom }}
+        }).setView(initialPosition, {{ default_zoom }});
 
         const info = document.getElementById('info');
         function updateInfo(text) {
             info.innerHTML = text;
         }
 
-        // Définir un icône personnalisé pour la position
+        // Icône personnalisée pour votre bateau principal
         var customIcon = L.icon({
             iconUrl: '/static/icone/VoilierImage.png',
             iconSize: [35, 55],
             iconAnchor: [16, 55],
             popupAnchor: [0, -55]
         });
+
 
         // Fond de carte OpenStreetMap
         var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -60,14 +93,13 @@
         }).addTo(map);
 
         // Couche MBTiles
-var mbtilesLayer = L.tileLayer('./static/tiles/{z}/{x}/{y}.png', {
-    tms: true,
-    opacity: 0.7,
-    attribution: 'MBTiles Map',
-    maxZoom: 18,
-    minZoom: 3
-}).addTo(map);
-
+        var mbtilesLayer = L.tileLayer('/tile/{z}/{x}/{y}', {
+            tms: true,
+            opacity: 0.7,
+            attribution: 'MBTiles Map',
+            maxZoom: {{ max_zoom }},
+            minZoom: {{ min_zoom }}
+        }).addTo(map);
 
         // Contrôle des couches
         var baseMaps = {
@@ -76,7 +108,7 @@ var mbtilesLayer = L.tileLayer('./static/tiles/{z}/{x}/{y}.png', {
         };
         L.control.layers(baseMaps, null, {collapsed: false}).addTo(map);
 
-        // Ajouter un marqueur avec l'icône personnalisée
+        // Marqueur principal
         var currentMarker = L.marker(initialPosition, { icon: customIcon }).addTo(map)
             .bindPopup("Salut tout le monde ! Je suis HUAHINE")
             .openPopup();
@@ -90,29 +122,84 @@ var mbtilesLayer = L.tileLayer('./static/tiles/{z}/{x}/{y}.png', {
 
         updateInfo(`Zoom: ${map.getZoom()}<br>Position: ${initialPosition[0].toFixed(5)}, ${initialPosition[1].toFixed(5)}`);
 
-        // Événements pour le marqueur
-        currentMarker.on('click', function() {
-            this.openPopup();
-        });
+        // Stockage des marqueurs AIS
+        var aisMarkers = {};
 
-        // Événements pour les tuiles
-        mbtilesLayer.on('load', function() {
-            console.log('Couche de tuiles chargée avec succès');
-        });
+        // Fonction pour mettre à jour ou créer un marqueur AIS
+        function updateAISMarker(ship) {
+            console.log("Mise à jour/création du marqueur pour MMSI:", ship.mmsi);
 
-        mbtilesLayer.on('loading', function() {
-            console.log('Chargement des tuiles en cours...');
-        });
+// Créer un icône rotatif basé sur le cap du navire
+const rotatedShipIcon = L.divIcon({
+    html: `<div class="ship-icon" style="transform: rotate(${ship.heading}deg);">
+        <svg viewBox="0 0 100 100" style="width: 24px; height: 24px;">
+            <path fill="#1e88e5" stroke="white" stroke-width="2"
+                d="M50,10 L80,80 L50,65 L20,80 Z"/>
+        </svg>
+    </div>`,
+    className: 'ship-marker',
+    iconSize: [12, 12],
+    iconAnchor: [6, 6]
+});
 
-        mbtilesLayer.on('tileerror', function(e) {
-            console.error('Erreur tuile:', {
-                coords: e.coords,
-                url: e.tile.src,
-                status: e.tile.errorStatus
-            });
-        });
+            if (aisMarkers[ship.mmsi]) {
+    // Mise à jour d'un marqueur existant
+    aisMarkers[ship.mmsi].setLatLng([ship.latitude, ship.longitude]);
+    aisMarkers[ship.mmsi].setIcon(rotatedShipIcon);
+    aisMarkers[ship.mmsi].getPopup().setContent(
+        `<strong>${ship.name || 'Navire inconnu'}</strong><br>` +  // Ajout du nom
+        `<strong>Navire AIS</strong><br>` +
+        `MMSI: ${ship.mmsi}<br>` +
+        `Position: ${ship.latitude.toFixed(5)}, ${ship.longitude.toFixed(5)}<br>` +
+        `Cap: ${ship.heading}°<br>` +
+        `Vitesse: ${ship.sog ? ship.sog.toFixed(1) : 'N/A'} nœuds`
+    );
 
-        // Fonction de mise à jour de la position
+            } else {
+                // Création d'un nouveau marqueur
+
+                aisMarkers[ship.mmsi] = L.marker([ship.latitude, ship.longitude], {
+                    icon: rotatedShipIcon
+                }).addTo(map);
+                aisMarkers[ship.mmsi].bindPopup(
+                    `<strong>${ship.name || 'Navire inconnu'}</strong><br>` +  // Ajout du nom
+                    `<strong>Navire AIS</strong><br>` +
+                    `MMSI: ${ship.mmsi}<br>` +
+                    `Position: ${ship.latitude.toFixed(5)}, ${ship.longitude.toFixed(5)}<br>` +
+                    `Cap: ${ship.heading}°<br>` +
+                    `Vitesse: ${ship.sog ? ship.sog.toFixed(1) : 'N/A'} nœuds`
+                );
+            }
+        }
+
+        // Fonction de mise à jour des données AIS
+        async function updateAISData() {
+            try {
+                console.log("Récupération des données AIS...");
+                const response = await fetch('/get_ships');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const ships = await response.json();
+                console.log("Données AIS reçues:", ships);
+
+                // Mettre à jour chaque navire
+                ships.forEach(ship => updateAISMarker(ship));
+
+                // Supprimer les marqueurs des navires qui ne sont plus présents
+                Object.keys(aisMarkers).forEach(mmsi => {
+                    if (!ships.find(ship => ship.mmsi === mmsi)) {
+                        console.log("Suppression du navire:", mmsi);
+                        map.removeLayer(aisMarkers[mmsi]);
+                        delete aisMarkers[mmsi];
+                    }
+                });
+            } catch (err) {
+                console.error("Erreur lors de la mise à jour des données AIS:", err);
+            }
+        }
+
+        // Fonction de mise à jour de la position principale
         async function updatePosition() {
             try {
                 const response = await fetch('/api/get_coordinates');
@@ -125,19 +212,19 @@ var mbtilesLayer = L.tileLayer('./static/tiles/{z}/{x}/{y}.png', {
                     const newLatLng = new L.LatLng(data.latitude, data.longitude);
                     currentMarker.setLatLng(newLatLng);
                     polyline.addLatLng(newLatLng);
-
-                    // Mise à jour de l'info sans recentrer la carte
                     updateInfo(`Zoom: ${map.getZoom()}<br>Position: ${data.latitude.toFixed(5)}, ${data.longitude.toFixed(5)}`);
-
-                    console.log(`Position mise à jour : ${data.latitude}, ${data.longitude}`);
                 }
             } catch (err) {
                 console.error("Erreur de mise à jour des coordonnées:", err);
             }
         }
 
-        // Mise à jour toutes les 3 secondes
+        // Intervalles de mise à jour
         const updateInterval = setInterval(updatePosition, 3000);
+        const aisUpdateInterval = setInterval(updateAISData, 10000);
+
+        // Premier appel immédiat pour les données AIS
+        updateAISData();
 
         // Événements de la carte
         map.on('moveend zoomend', () => {
@@ -148,6 +235,7 @@ var mbtilesLayer = L.tileLayer('./static/tiles/{z}/{x}/{y}.png', {
         // Nettoyage à la fermeture
         window.onbeforeunload = function() {
             clearInterval(updateInterval);
+            clearInterval(aisUpdateInterval);
         };
     </script>
 </body>
