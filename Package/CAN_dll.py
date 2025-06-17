@@ -14,7 +14,7 @@ class CanMsg(Structure):
         ("data", CanData)
     )
 
-# Défini les fonctions de la dll.
+# Erreur sur les fonctions de la dll.
 class CanError(Exception):
     pass
 
@@ -56,7 +56,7 @@ class CANDll:
         else:
             return self._handle     # Retourne le handle dont on a besoin pour savoir si c'est ouvert
 
-    # Méthode de lecture des trames du bus CAN en sychrone.-------------------------------------------------------------
+    # Méthode de lecture des trames du bus CAN en synchrone.-------------------------------------------------------------
     def read_dll(self, stop_flag, main_window) -> CanMsg:       # Retourne un pointeur sur le CanMsg
         if self._handle is None:
            raise CanError("Channel not open")

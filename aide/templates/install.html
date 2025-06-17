@@ -49,7 +49,7 @@
             </div>
         </li>
             <ul>
-                <li>Vous n'avez qu'à brancher les bornes CAN_H et CAN_L.</li>
+                <li>Vous n'avez qu'à brancher les bornes CAN_H et CAN_L sur les pins 4 et 5.</li>
                 <li>Si vous êtes branché à la place du bouchon il faut ajouter une resistance de 120 Ohms.</li>
             </ul>
         <div class="map-preview">
@@ -149,7 +149,7 @@ class CANDll:
         else:
             return self._handle     # Retourne le handle dont on a besoin pour savoir si c'est ouvert
 
-    # Méthode de lecture des trames du bus CAN en sychrone.-------------------------------------------------------------
+    # Méthode de lecture des trames du bus CAN en synchrone.-------------------------------------------------------------
     def read_dll(self, stop_flag, main_window) -> CanMsg:       # Retourne un pointeur sur le CanMsg
         if self._handle is None:
            raise CanError("Channel not open")
