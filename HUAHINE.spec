@@ -16,7 +16,7 @@ a = Analysis(
         ('static/icone/*.png', 'static/icone/'),
         ('templates', 'templates'),
         ('static', 'static'),
-        # ('static/cartes.mbtiles', 'static')
+        ('static/cartes.mbtiles', 'static')
     ],
     hiddenimports=['flask'],
     hookspath=[],
