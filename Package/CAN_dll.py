@@ -1,4 +1,5 @@
 import ctypes
+from Package.constante import *
 from ctypes import Structure, c_ubyte,c_long, c_int, POINTER, Array
 
 class CanData(Array):
@@ -43,6 +44,9 @@ class CANDll:
         self._dll.canusb_Read.restype = c_int
         # Fonction STATUS
         self._dll.canusb_Status.restype = c_int
+        # Fonction FLUSH
+        self._dll.canusb_Flush.restype = c_int
+        self._dll.canusb_Flush.argtypes = [c_long,c_long]
         # Il y en a d'autres, mais pour l'instant ne sont pas utiles
 
         self._handle = None
@@ -91,6 +95,7 @@ class CANDll:
     # Méthode de fermeture de l'adaptateur. ----------------------------------------------------------------------------
     def close(self):
         if self._handle is not None:
+            self._dll.canusb_Flush(self._handle, FLUSH_WAIT)
             self._dll.canusb_Close(self._handle)
             self._handle = None
 
