@@ -5,8 +5,8 @@ import subprocess
 import webbrowser
 import ctypes
 import sqlite3
-
 import qasync
+import logging
 
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtWidgets import QTableView, QMessageBox, QFileDialog
@@ -30,39 +30,6 @@ import sys
 def resource_path(relative_path):
     base_path = getattr(sys, '_MEIPASS', os.path.abspath("."))
     return os.path.join(base_path, relative_path)
-
-
-# Au niveau global de votre fichier, définissez coordinates comme ceci :
-coordinates: dict[str, float] = {
-    "latitude": 43.243757,
-    "longitude": 5.365660
-}
-
-class CoordinatesManager:
-    @staticmethod
-    def update_coordinates(latitude: float, longitude: float) -> dict[str, float]:
-        try:
-            global coordinates
-            # Vérification et conversion des types
-            lat = float(latitude)
-            lon = float(longitude)
-
-            # Mise à jour du dictionnaire
-            coordinates.update({
-                "latitude": lat,
-                "longitude": lon
-            })
-
-            print(f"Coordonnées mises à jour : latitude={lat}, longitude={lon}")
-            return coordinates
-
-        except ValueError as error:
-            print(f"Erreur de conversion des coordonnées : {error}")
-            raise
-        except Exception as error:
-            print(f"Erreur inattendue : {error}")
-            raise
-
 
 # ********************************** CLASSE MODELE DE LA TABLE *********************************************************
 # Cette classe sert de modèle à la table incluse dans MainWindow().
@@ -746,59 +713,6 @@ class MainWindow(QMainWindow):
     def show_help(self):
         webbrowser.open("http://127.0.0.1:5001/")
 
-    # Méthode qui lance la "quart_app" ---------------------------------------------------------------------------------
-    async def lancer_quart(self):
-        if self.quart_running:
-            return
-
-        try:
-            self.quart_running = True
-            await quart_app.run_task(
-                host='127.0.0.1',
-                port=5000,
-                debug=False
-            )
-        except Exception as error:
-            self.quart_running = False
-            print(f"Erreur lors du lancement du serveur: {error}")
-            QMessageBox.critical(self, "Erreur", f"Erreur du serveur: {str(error)}")
-
-    async def arreter_quart(self):
-        """Arrête proprement le serveur Quart"""
-        if hasattr(self, 'quart_task') and self.quart_task and not self.quart_task.done():
-            try:
-                # Fermer toutes les connexions actives
-                if hasattr(quart_app, 'clients'):
-                    for client in quart_app.clients:
-                        client.close()
-
-                # Arrêter le serveur
-                await quart_app.shutdown()
-
-                # Annuler la tâche
-                self.quart_task.cancel()
-                try:
-                    await asyncio.wait_for(self.quart_task, timeout=5.0)
-                except (asyncio.CancelledError, asyncio.TimeoutError):
-                    pass
-
-                print("Serveur Quart arrêté avec succès")
-
-                # Nettoyer la référence
-                self.quart_task = None
-
-            except Exception as error:
-                print(f"Erreur lors de l'arrêt du serveur Quart: {error}")
-
-    def on_click_map(self):
-        """Gestionnaire du clic sur le bouton Map"""
-        try:
-            print("Bouton 'Map' cliqué !")
-            # Au lieu de lancer une nouvelle boucle, ouvrir simplement le navigateur
-            webbrowser.open('http://127.0.0.1:5000/')
-        except Exception as error:
-            print(f"Erreur dans on_click_map: {e}")
-            QMessageBox.critical(self, "Erreur", f"Une erreur est survenue: {str(error)}")
 
     # Méthode pour avoir quatre boutons personalisés, qui sont le précédent, le suivant, valider et annuler ------------
     @staticmethod
@@ -873,13 +787,98 @@ class MainWindow(QMainWindow):
             about_box.exec_()
 # ======================================= FIN DES METHODES =============================================================
 
-# ========================== METHODE QUI SONT ASYNCHRONE SUR QUART =====================================================
+# ================================================= DEBUT DU QUART =====================================================
+# Dans class MainWindow(QMainWindow)
+    # Méthode qui lance la "quart_app" ---------------------------------------------------------------------------------
+    async def lancer_quart(self):
+        if self.quart_running:
+            return
+
+        try:
+            self.quart_running = True
+            await quart_app.run_task(
+                host='127.0.0.1',
+                port=5000,
+                debug=False
+            )
+        except Exception as error:
+            self.quart_running = False
+            print(f"Erreur lors du lancement du serveur: {error}")
+            QMessageBox.critical(self, "Erreur", f"Erreur du serveur: {str(error)}")
+
+    async def arreter_quart(self):
+        """Arrête proprement le serveur Quart"""
+        if hasattr(self, 'quart_task') and self.quart_task and not self.quart_task.done():
+            try:
+                # Fermer toutes les connexions actives
+                if hasattr(quart_app, 'clients'):
+                    for client in quart_app.clients:
+                        client.close()
+
+                # Arrêter le serveur
+                await quart_app.shutdown()
+
+                # Annuler la tâche
+                self.quart_task.cancel()
+                try:
+                    await asyncio.wait_for(self.quart_task, timeout=5.0)
+                except (asyncio.CancelledError, asyncio.TimeoutError):
+                    pass
+
+                print("Serveur Quart arrêté avec succès")
+
+                # Nettoyer la référence
+                self.quart_task = None
+
+            except Exception as error:
+                print(f"Erreur lors de l'arrêt du serveur Quart: {error}")
+
+    def on_click_map(self):
+        """Gestionnaire du clic sur le bouton Map"""
+        try:
+            print("Bouton 'Map' cliqué !")
+            # Au lieu de lancer une nouvelle boucle, ouvrir simplement le navigateur
+            webbrowser.open('http://127.0.0.1:5000/')
+        except Exception as error:
+            print(f"Erreur dans on_click_map: {e}")
+            QMessageBox.critical(self, "Erreur", f"Une erreur est survenue: {str(error)}")
+
+
+# Au niveau global de votre fichier, définissez coordinates comme ceci :
+coordinates: dict[str, float] = {
+    "latitude": 43.243757,
+    "longitude": 5.365660
+}
+
+class CoordinatesManager:
+    @staticmethod
+    def update_coordinates(latitude: float, longitude: float) -> dict[str, float]:
+        try:
+            global coordinates
+            # Vérification et conversion des types
+            lat = float(latitude)
+            lon = float(longitude)
+
+            # Mise à jour du dictionnaire
+            coordinates.update({
+                "latitude": lat,
+                "longitude": lon
+            })
+
+            print(f"Coordonnées mises à jour : latitude={lat}, longitude={lon}")
+            return coordinates
+
+        except ValueError as error:
+            print(f"Erreur de conversion des coordonnées : {error}")
+            raise
+        except Exception as error:
+            print(f"Erreur inattendue : {error}")
+            raise
+
 # Application Quart
 quart_app = Quart(__name__,
                   static_folder='static',
                   template_folder='templates')
-
-
 
 # Coordonnées centrées sur le port de la pointe rouge
 DEFAULT_CONFIG = {
@@ -967,6 +966,45 @@ async def map_page():
             **DEFAULT_CONFIG['bounds']
         )
 
+
+@quart_app.route('/tile/<int:z>/<int:x>/<int:y>')
+async def serve_tile(z, x, y):
+    print(f"Demande de tuile : z={z}, x={x}, y={y}")
+    try:
+        print(f"Coordonnées reçues : z={z}, x={x}, y={y}")
+        # Testez les deux formats
+        y_tms_1 = (1 << z) - 1 - y
+        print(f"Coordonnée Y convertie (TMS) : {y_tms_1}")
+        print(f"Coordonnée Y non convertie : {y}")
+
+        conn = sqlite3.connect('static/cartes.mbtiles')
+        cursor = conn.cursor()
+
+        # Dans MBTiles, y est inversé pour le format TMS
+        y_tms = y
+
+        cursor.execute('''
+            SELECT tile_data FROM tiles 
+            WHERE zoom_level=? AND tile_column=? AND tile_row=?
+        ''', (z, x, y_tms))
+
+        tile_data = cursor.fetchone()
+        conn.close()
+
+        if tile_data:
+            print(f"Tuile trouvée pour z={z}, x={x}, y={y}")
+            return Response(
+                tile_data[0],
+                mimetype='image/png'
+            )
+        else:
+            print(f"Tuile non trouvée pour z={z}, x={x}, y={y}")
+            return Response('', status=404)
+
+    except Exception as e:
+        print(f"Erreur pour la tuile z={z}, x={x}, y={y}: {e}")
+        return Response('', status=500)
+
 @quart_app.route('/tiles/<int:z>/<int:x>/<int:y>.png')
 async def get_tile(z, x, y):
     try:
@@ -988,7 +1026,6 @@ async def after_request(response):
     response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
     response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE')
     return response
-import logging
 
 @quart_app.route('/api/get_coordinates')
 async def get_coordinates():

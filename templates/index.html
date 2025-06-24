@@ -104,7 +104,7 @@
             zoomSnap: 1,
             zoomDelta: 1,
             minZoom: 2,
-            maxZoom: 19
+            maxZoom: 18
         }).setView(initialPosition, 13);
 
         const info = document.getElementById('info');
@@ -144,23 +144,23 @@
         });
 
         // Fond de carte OpenStreetMap
-        var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19,
-            attribution: '© OpenStreetMap contributors'
-        }).addTo(map);
+       // var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+       //     maxZoom: 19,
+       //     attribution: '© OpenStreetMap contributors'
+       // }).addTo(map);
 
         // Couche MBTiles
         var mbtilesLayer = L.tileLayer('/tile/{z}/{x}/{y}', {
             tms: true,
             opacity: 0.7,
             attribution: 'MBTiles Map',
-            maxZoom: 19,
+            maxZoom: 18,
             minZoom: 2
         }).addTo(map);
 
         // Contrôle des couches
         var baseMaps = {
-            "OpenStreetMap": osm,
+            //"OpenStreetMap": osm,
             "Carte Marine": mbtilesLayer
         };
         L.control.layers(baseMaps, null, {collapsed: false}).addTo(map);
