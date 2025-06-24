@@ -15,7 +15,7 @@ class MMSI:
 
         # Variables statiques partagées entre les instances
         self._nom_bateau_a = ""
-        self._nom_bateau_a= ""
+        self._nom_bateau_b = ""
         self._indicatif_a = ""
         self._indicatif_b = ""
         self._destination_bateau_a = ""
@@ -26,43 +26,66 @@ class MMSI:
 
         self._table = []  # Une table (liste) pour stocker les données
 
-        # Méthode privée pour savoir si le MMSI est dans la table.
-        def __existe_dans_table(self, pgn, trame):
-            """
-            Fonction privée pour vérifier si une combinaison PGN et Trame existe dans la table.
-            Renvoie l'élément correspondant ou None.
-            """
-            for item in self._table:
-                if item["PGN"] == pgn and item["Trame"] == trame:
-                    return item  # Retourne l'entrée si elle existe
-            return None  # Retourne None si aucune entrée n'est trouvée
+    def __existe_dans_table(self, mmsi):
+        """
+        Fonction privée pour vérifier si un MMSI existe dans la table.
+        Renvoie l'élément correspondant ou None.
+        """
+        for item in self._table:
+            if item["mmsi"] == mmsi:
+                return item
+        return None
 
-        # Méthode affiche dans une table les resultats des MMSI. Exemple ****** >>>
-        def mmsi(self,pgn,  nom, val1,val2,val3):
-            # Utilisation de la correspondance pour identifier le PGN
-            match pgn:
-                case 129038:  # Classe A
-                    if val1 == 0 and val2 ==9:  # Première trame (initialisation)
+    def ajouter_ou_mettre_a_jour_navires(self, navires_data):
+        """
+        Ajoute ou met à jour plusieurs navires à partir d'une liste de données
+        """
+        for navire in navires_data:
+            mmsi = str(navire.get("mmsi"))
+            if not mmsi:
+                continue  # Ignorer les entrées sans MMSI
 
+            bateau_existant = self.__existe_dans_table(mmsi)
 
+            if bateau_existant:
+                # Mise à jour des données du bateau existant
+                for cle, valeur in navire.items():
+                    bateau_existant[cle] = valeur
+            else:
+                # Création d'un nouveau bateau avec des valeurs par défaut
+                nouveau_bateau = {
+                    "mmsi": mmsi,
+                    "name": navire.get("name", "Navire inconnu"),
+                    "latitude": navire.get("latitude", 0.0),
+                    "longitude": navire.get("longitude", 0.0),
+                    "heading": navire.get("heading", 0),
+                    "sog": navire.get("sog", 0.0),
+                    "class": navire.get("class", "B")
+                }
+                self._table.append(nouveau_bateau)
 
-                        self._nom_bateau_a = nom  # On stocke le nom fourni
-                    elif val1 == 1:  # Trame suivante (cumul)
-                        self._nom_bateau_a += nom  # Ajout au nom existant
+    def get_all_ships(self):
+        """
+        Retourne tous les navires dans le format attendu
+        """
+        return self._table
 
-                        # Mise à jour dans la table
-                        self._table.append({"PGN": pgn, "Nom_Bateau": self._nom_bateau_a, "Trame": val1})
-                    else:
-                        return "Trame inconnue pour Classe A"
+    def creer_navire(mmsi, name, lat, lon, heading, sog, ship_class):
+        return {
+            "mmsi": str(mmsi),
+            "name": name,
+            "latitude": lat,
+            "longitude": lon,
+            "heading": heading,
+            "sog": sog,
+            "class": ship_class
+        }
 
-                case 129039:  # Classe B (si prévu dans le futur)
-                    if val1 == 0:
-                        self.nom_bateau_b = nom
-                    elif val1 == 1:
-                        self.nom_bateau_b += nom
-                    else:
-                        return "Trame inconnue pour Classe B"
+    # Création des données
+    navires_data = [
+        creer_navire("123456789", "BELLE BRISE", 43.3, 5.4, 90, 12.5, "B"),
+        creer_navire("987654321", "GRAND BLEU", 43.25, 5.35, 180, 8.3, "A")
+    ]
 
-                case _:
-                    return "PGN non pris en charge"
-
+    # Appel de la méthode
+    ajouter_ou_mettre_a_jour_navires(navires_data)
