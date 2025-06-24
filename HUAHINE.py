@@ -903,21 +903,25 @@ async def get_ships():
             "latitude": 43.3,  # Près de Marseille
             "longitude": 5.4,
             "heading": 90,
-            "sog": 12.5  # Vitesse en nœuds
+            "sog": 12.5,  # Vitesse en nœuds
+            "class": "B"
+
         },
         {
             "mmsi": "987654321",
             "latitude": 43.25,
             "longitude": 5.35,
             "heading": 180,
-            "sog": 8.3
+            "sog": 8.3,
+            "class": "A"
         },
         {
             "mmsi": "456789123",
             "latitude": 43.28,
             "longitude": 5.38,
             "heading": 270,
-            "sog": 15.7
+            "sog": 15.7,
+            "class": "B"
         }
     ]
 
