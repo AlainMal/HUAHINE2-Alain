@@ -1,7 +1,5 @@
 # -*- mode: python ; coding: utf-8 -*-
 
-from PyInstaller.building.build_main import Analysis, PYZ, EXE, COLLECT
-
 a = Analysis(
     ['HUAHINE.py'],
     pathex=[],
@@ -18,40 +16,34 @@ a = Analysis(
         ('static', 'static'),
         ('static/cartes.mbtiles', 'static')
     ],
-    hiddenimports=['flask'],
+    hiddenimports=[],
     hookspath=[],
+    hooksconfig={},
     runtime_hooks=[],
     excludes=[],
     noarchive=False,
+    optimize=0,
 )
-
-pyz = PYZ(a.pure, a.zipped_data)
+pyz = PYZ(a.pure)
 
 exe = EXE(
     pyz,
     a.scripts,
+    a.binaries,
+    a.datas,
     [],
-    exclude_binaries=True,
     name='HUAHINE',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
-    upx=False,
-    console=False,
+    upx=True,
+    upx_exclude=[],
+    runtime_tmpdir=None,
+    console=True,
     disable_windowed_traceback=False,
+    argv_emulation=False,
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon=['ps2.ico']
-)
-
-collect = COLLECT(
-    exe,
-    a.binaries,
-    a.zipfiles,
-    a.datas,
-    strip=False,
-    upx=False,
-    upx_exclude=[],
-    name='HUAHINE'
+    icon=None  # Ajoutez cette ligne pour désactiver l'icône par défaut
 )
