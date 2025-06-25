@@ -12,17 +12,15 @@ a = Analysis(
         ('templates/index.html', 'templates/'),
         ('aide/templates/*.html', 'templates/aide/'),
         ('static/icone/*.png', 'static/icone/'),
-        ('templates', 'templates'),
-        ('static', 'static'),
-        ('static/cartes.mbtiles', 'static')
-    ],
+        ('templates', 'templates')
+     ],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
     excludes=[],
     noarchive=False,
-    optimize=0,
+    optimize=0
 )
 pyz = PYZ(a.pure)
 
@@ -39,11 +37,11 @@ exe = EXE(
     upx=True,
     upx_exclude=[],
     runtime_tmpdir=None,
-    console=True,
+    console=False,
     disable_windowed_traceback=False,
     argv_emulation=False,
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon=None  # Ajoutez cette ligne pour désactiver l'icône par défaut
+    icon='ps2.ico'  # Ajoutez cette ligne pour désactiver l'icône par défaut
 )

@@ -178,6 +178,14 @@
             opacity: 0.7
         }).addTo(map);
 
+        // Après la déclaration de polyline, ajoutez :
+        var projectionLine = L.polyline([], {
+            color: '#1e88e5',
+            weight: 2,
+            opacity: 0.8,
+            dashArray: '5, 5'
+        }).addTo(map);
+
         updateInfo(`Zoom: ${map.getZoom()}<br>Position: ${initialPosition[0].toFixed(5)}, ${initialPosition[1].toFixed(5)}`);
 
         // Stockage des marqueurs AIS et des lignes de vitesse
@@ -304,9 +312,62 @@
 
                 if (data.latitude && data.longitude) {
                     const newLatLng = new L.LatLng(data.latitude, data.longitude);
+
+                    // Mise à jour du marqueur et de la trace
                     currentMarker.setLatLng(newLatLng);
                     polyline.addLatLng(newLatLng);
-                    updateInfo(`Zoom: ${map.getZoom()}<br>Position: ${data.latitude.toFixed(5)}, ${data.longitude.toFixed(5)}`);
+
+                    // Calcul de la projection si la vitesse et le cap sont disponibles
+                    if (data.vitesse !== undefined && data.cap !== undefined) {
+                        const speed = data.vitesse; // vitesse en nœuds
+                        const heading = data.cap; // cap en degrés
+
+                        // Calcul de la distance projetée
+                        const distanceInNauticalMiles = speed * projectionHours;
+                        const distanceInDegrees = nauticalMilesToDegrees(distanceInNauticalMiles);
+
+                        // Calcul du point final de la projection
+                        const headingRad = (heading * Math.PI) / 180;
+                        const endLat = data.latitude + distanceInDegrees * Math.cos(headingRad);
+                        const endLon = data.longitude + distanceInDegrees * Math.sin(headingRad);
+
+                        // Mise à jour de la ligne de projection
+                        projectionLine.setLatLngs([
+                            [data.latitude, data.longitude],
+                            [endLat, endLon]
+                        ]);
+
+                        // Mise à jour du popup avec les informations détaillées
+                        currentMarker.bindPopup(`
+                            <strong>HUAHINE</strong><br>
+                            Position: ${data.latitude.toFixed(5)}, ${data.longitude.toFixed(5)}<br>
+                            Cap: ${heading}°<br>
+                            Vitesse: ${speed.toFixed(1)} nœuds<br>
+                            Distance projetée: ${distanceInNauticalMiles.toFixed(1)} NM sur ${(projectionHours * 60).toFixed(0)} min
+                        `);
+
+                        // Mise à jour des informations affichées
+                        updateInfo(`
+                            Zoom: ${map.getZoom()}<br>
+                            Position: ${data.latitude.toFixed(5)}, ${data.longitude.toFixed(5)}<br>
+                            Cap: ${heading}°<br>
+                            Vitesse: ${speed.toFixed(1)} nœuds
+                        `);
+                    } else {
+                        // Si pas de vitesse ou cap disponible, afficher seulement la position
+                        updateInfo(`
+                            Zoom: ${map.getZoom()}<br>
+                            Position: ${data.latitude.toFixed(5)}, ${data.longitude.toFixed(5)}
+                        `);
+                    }
+
+                    // Rotation de l'icône du bateau selon le cap (si disponible)
+                    if (data.cap !== undefined) {
+                        const icon = currentMarker.getElement();
+                        if (icon) {
+                            icon.style.transform = `rotate(${data.cap}deg)`;
+                        }
+                    }
                 }
             } catch (err) {
                 console.error("Erreur de mise à jour des coordonnées:", err);
