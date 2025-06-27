@@ -847,22 +847,28 @@ class MainWindow(QMainWindow):
 # Au niveau global de votre fichier, définissez coordinates comme ceci :
 coordinates: dict[str, float] = {
     "latitude": 43.243757,
-    "longitude": 5.365660
+    "longitude": 5.365660,
+    "speed" : 6.0,
+    "heading" : 270.00
 }
 
 class CoordinatesManager:
     @staticmethod
-    def update_coordinates(latitude: float, longitude: float) -> dict[str, float]:
+    def update_coordinates(latitude: float, longitude: float,speed: float,heading: float) -> dict[str, float]:
         try:
             global coordinates
             # Vérification et conversion des types
             lat = float(latitude)
             lon = float(longitude)
+            vit=float(speed)
+            cap=float(heading)
 
             # Mise à jour du dictionnaire
             coordinates.update({
                 "latitude": lat,
-                "longitude": lon
+                "longitude": lon,
+                "speed": vit,
+                "heading":cap
             })
 
             print(f"Coordonnées mises à jour : latitude={lat}, longitude={lon}")
@@ -1037,7 +1043,7 @@ async def get_coordinates():
         return jsonify(coordinates)  # Retourne les coordonnées stockées globalement
     except Exception as error:
         print(f"Erreur lors de la récupération des coordonnées : {error}")
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": str(error)}), 500
 # ===================================== FIN DE QUART ====================================================================
 if __name__ == "__main__":
     print(f"SQLite Version: {sqlite3.sqlite_version}")

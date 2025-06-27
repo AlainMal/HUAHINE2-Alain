@@ -43,5 +43,5 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon='ps2.ico'  # Ajoutez cette ligne pour désactiver l'icône par défaut
+    icon='ps2.ico'  # Ajoutez cette ligne pour activer l'icône par défaut
 )
