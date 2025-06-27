@@ -9,6 +9,18 @@ class AISData:
 
 
 # Classe permettant de lister les MMSI en temps réel.
+def creer_navire(mmsi, name, lat, lon, heading, sog, ship_class):
+    return {
+        "mmsi": str(mmsi),
+        "name": name,
+        "latitude": lat,
+        "longitude": lon,
+        "heading": heading,
+        "sog": sog,
+        "class": ship_class
+    }
+
+
 class MMSI:
     def __init__(self,pgn):
         self._pgn = pgn
@@ -26,6 +38,7 @@ class MMSI:
 
         self._table = []  # Une table (liste) pour stocker les données
 
+
     def __existe_dans_table(self, mmsi):
         """
         Fonction privée pour vérifier si un MMSI existe dans la table.
@@ -36,7 +49,7 @@ class MMSI:
                 return item
         return None
 
-    def ajouter_ou_mettre_a_jour_navires(self, navires_data):
+    def mmsi_navires(self, navires_data):
         """
         Ajoute ou met à jour plusieurs navires à partir d'une liste de données
         """
@@ -70,17 +83,6 @@ class MMSI:
         """
         return self._table
 
-    def creer_navire(mmsi, name, lat, lon, heading, sog, ship_class):
-        return {
-            "mmsi": str(mmsi),
-            "name": name,
-            "latitude": lat,
-            "longitude": lon,
-            "heading": heading,
-            "sog": sog,
-            "class": ship_class
-        }
-
     # Création des données
     navires_data = [
         creer_navire("123456789", "BELLE BRISE", 43.3, 5.4, 90, 12.5, "B"),
@@ -88,4 +90,4 @@ class MMSI:
     ]
 
     # Appel de la méthode
-    ajouter_ou_mettre_a_jour_navires(navires_data)
+    # mmsi_navires(navires_data)

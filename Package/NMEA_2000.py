@@ -354,10 +354,10 @@ class NMEA2000:
 
                     elif z == 6:
                         self._valeurChoisie2 = "{:.2f}".format((datas[3] << 8 | datas[2]) * 0.0001 / 1.85)
-                        self._pgn2 = "Longueur"
+                        self._pgn2 = "Distance"
 
                         self._valeurChoisie3 = "{:.2f}".format((datas[5] << 8 | datas[4]) * 0.0001 / 1.85)
-                        self._pgn3 = "Largeur"
+                        self._pgn3 = "Distance Proue"
 
                     elif z == 7:
                         self._valeurChoisie2 = "".join([chr(datas[i]) for i in range(6, 8)])
