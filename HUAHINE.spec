@@ -11,7 +11,7 @@ a = Analysis(
         ('icones/*', 'icones/'),
         ('templates/index.html', 'templates/'),
         ('aide/templates/*.html', 'templates/aide/'),
-        ('static/icone/*.png', 'static/icone/'),
+        ('static/icone/*.ico', 'static/icone/'),
         ('templates', 'templates')
      ],
     hiddenimports=[],
@@ -43,5 +43,5 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon='ps2.ico'  # Ajoutez cette ligne pour activer l'icône par défaut
+    icon='VoilierImage.ico'  # Ajoutez cette ligne pour activer l'icône par défaut
 )

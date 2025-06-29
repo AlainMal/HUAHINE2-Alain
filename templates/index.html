@@ -17,6 +17,10 @@
             border-radius: 4px;
             font-family: monospace;
         }
+
+        strong {
+            color : #3a3fd0;
+        }
         .legend {
             position: absolute;
             bottom: 30px;
@@ -204,7 +208,7 @@ const customIcon = L.divIcon({
 
             // Créer un icône rotatif basé sur le cap du navire
             const rotatedShipIcon = L.divIcon({
-                html: `<div class="ship-icon" style="transform: rotate(${ship.heading}deg);">
+                html: `<div class="ship-icon" style="transform: rotate(${ship.cog}deg);">
                     <svg viewBox="0 0 100 100" style="width: 24px; height: 24px;">
                         <path fill="${shipColor}" stroke="white" stroke-width="2"
                             d="M50,10 L80,80 L50,65 L20,80 Z"/>
@@ -221,7 +225,7 @@ const customIcon = L.divIcon({
             const distanceInDegrees = nauticalMilesToDegrees(distanceInNauticalMiles);
 
             // Calculer le point final de la ligne de vitesse
-            const headingRad = (ship.heading * Math.PI) / 180;
+            const headingRad = (ship.cog * Math.PI) / 180;
 
             // Calculer les coordonnées du point final
             const endLat = ship.latitude + distanceInDegrees * Math.cos(headingRad);
@@ -251,7 +255,7 @@ const customIcon = L.divIcon({
                 <strong>Navire AIS Classe ${ship.class}</strong><br>
                 MMSI: ${ship.mmsi}<br>
                 Position: ${ship.latitude.toFixed(5)}, ${ship.longitude.toFixed(5)}<br>
-                Cap: ${ship.heading}°<br>
+                Cap: ${ship.cog}°<br>
                 Vitesse: ${ship.sog ? ship.sog.toFixed(1) : 'N/A'} nœuds<br>
                 Distance projetée: ${distanceInNauticalMiles.toFixed(1)} NM sur ${(projectionHours * 60).toFixed(0)} min
             `;
@@ -319,14 +323,14 @@ async function updatePosition() {
 
             // Calcul de la projection
             const speed = data.speed || 0; // vitesse en nœuds
-            const heading = data.heading || 0; // cap en degrés
+            const cog = data.cog || 0; // cap en degrés
 
             // Calcul de la distance projetée
             const distanceInNauticalMiles = speed * projectionHours;
             const distanceInDegrees = nauticalMilesToDegrees(distanceInNauticalMiles);
 
             // Calcul du point final de la projection
-            const headingRad = (heading * Math.PI) / 180;
+            const headingRad = (cog * Math.PI) / 180;
             const endLat = data.latitude + distanceInDegrees * Math.cos(headingRad);
             const endLon = data.longitude + distanceInDegrees * Math.sin(headingRad);
 
@@ -341,7 +345,7 @@ async function updatePosition() {
             if (icon) {
                 const shipIcon = icon.querySelector('.ship-icon');
                 if (shipIcon) {
-                    shipIcon.style.transform = `rotate(${heading}deg)`;
+                    shipIcon.style.transform = `rotate(${cog}deg)`;
                 }
             }
 
@@ -349,7 +353,7 @@ async function updatePosition() {
             currentMarker.bindPopup(`
                 <strong>HUAHINE</strong><br>
                 Position: ${data.latitude.toFixed(5)}, ${data.longitude.toFixed(5)}<br>
-                Cap: ${heading}°<br>
+                Cap: ${cog}°<br>
                 Vitesse: ${speed.toFixed(1)} nœuds<br>
                 Distance projetée: ${distanceInNauticalMiles.toFixed(1)} NM sur ${(projectionHours * 60).toFixed(0)} min
             `);
@@ -358,7 +362,7 @@ async function updatePosition() {
             updateInfo(`
                 Zoom: ${map.getZoom()}<br>
                 Position: ${data.latitude.toFixed(5)}, ${data.longitude.toFixed(5)}<br>
-                Cap: ${heading}°<br>
+                Cap: ${cog}°<br>
                 Vitesse: ${speed.toFixed(1)} nœuds
             `);
         }

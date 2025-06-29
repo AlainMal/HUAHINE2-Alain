@@ -281,7 +281,7 @@
         <string/>
        </property>
        <property name="pixmap">
-        <pixmap>../HUAHINE/images/regate.jpg</pixmap>
+        <pixmap>C:/Users/alain/.designer/HUAHINE/images/regate.jpg</pixmap>
        </property>
        <property name="scaledContents">
         <bool>true</bool>
@@ -300,7 +300,7 @@
         <string/>
        </property>
        <property name="pixmap">
-        <pixmap>images/regate.jpg</pixmap>
+        <pixmap>C:/Users/alain/.designer/PythonProject/images/regate.jpg</pixmap>
        </property>
        <property name="scaledContents">
         <bool>true</bool>
@@ -319,7 +319,7 @@
         <string/>
        </property>
        <property name="pixmap">
-        <pixmap>images/VoilierImage2.png</pixmap>
+        <pixmap>C:/Users/alain/.designer/PythonProject/images/VoilierImage2.png</pixmap>
        </property>
        <property name="scaledContents">
         <bool>true</bool>
@@ -338,7 +338,7 @@
         <string/>
        </property>
        <property name="pixmap">
-        <pixmap>images/Spi.png</pixmap>
+        <pixmap>C:/Users/alain/.designer/PythonProject/images/Spi.png</pixmap>
        </property>
        <property name="scaledContents">
         <bool>true</bool>
@@ -357,7 +357,7 @@
         <string/>
        </property>
        <property name="pixmap">
-        <pixmap>images/Image3.png</pixmap>
+        <pixmap>C:/Users/alain/.designer/PythonProject/images/Image3.png</pixmap>
        </property>
        <property name="scaledContents">
         <bool>true</bool>
@@ -513,7 +513,7 @@
    </property>
    <property name="icon">
     <iconset>
-     <normaloff>icones/Quitter.png</normaloff>icones/Quitter.png</iconset>
+     <normaloff>icones/sortie.png</normaloff>icones/sortie.png</iconset>
    </property>
    <property name="text">
     <string>Quitter</string>
@@ -648,7 +648,7 @@
   <action name="actionAbout">
    <property name="icon">
     <iconset>
-     <normaloff>icones/ps2.png</normaloff>icones/ps2.png</iconset>
+     <normaloff>icones/VoilierImage.png</normaloff>icones/VoilierImage.png</iconset>
    </property>
    <property name="text">
     <string>A propos</string>

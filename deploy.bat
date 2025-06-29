@@ -20,7 +20,7 @@ rem Crée le dossier static dans dist
 mkdir dist\static
 
 rem Copie le fichier mbtiles
-rem copy static\cartes.mbtiles dist\static\
+copy static\cartes.mbtiles dist\static\
 
 echo "Déploiement terminé !"
 pause

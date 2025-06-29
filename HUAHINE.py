@@ -127,10 +127,9 @@ class MainWindow(QMainWindow):
         self._reply = None
         self._selected_file_path = None
         self.loop = None
-        # self.setWindowIcon(QIcon('ps2.ico'))
+        self.setWindowIcon(QIcon('VoilierImage.ico'))
 
         loadUi(resource_path('Alain.ui'), self)
-        # uic.loadUi('Alain.ui', self)
         self.quart_running = False  # Pour suivre l'état du serveur
 
         self._fenetre_status = None
@@ -152,7 +151,7 @@ class MainWindow(QMainWindow):
         self.line_table.setText("5000") # Taille pour le buffer tournant
 
         # Crée l'instance des Classes
-        self.setWindowIcon(QIcon("ps2.ico"))
+        self.setWindowIcon(QIcon("VoilierImage.ico"))
         self._temps_reel = TempsReel()
         self._nmea_2000 = NMEA2000(self)
         self._can_interface = CANDll(self._stop_flag)
@@ -730,7 +729,7 @@ class MainWindow(QMainWindow):
         try:
             msg_box = QMessageBox()
             msg_box.setWindowTitle(titre)
-            msg_box.setWindowIcon(QIcon("ps2.ico"))
+            msg_box.setWindowIcon(QIcon("VoilierImage.ico"))
 
             # Ajout des quatre boutons personalisés.
             bouton_oui = msg_box.addButton(premier, QMessageBox.ActionRole)
@@ -773,7 +772,7 @@ class MainWindow(QMainWindow):
         # Crée une boîte de dialogue "À propos"
             about_box = QMessageBox()
             about_box.setWindowTitle("À propos de l'application")
-            about_box.setWindowIcon(QIcon("ps2.ico"))
+            about_box.setWindowIcon(QIcon("VoilierImage.ico"))
             about_box.setText(
                 "<h3>Application Huahine</h3>"
                 "<p>Version 1.0</p>"
@@ -849,26 +848,26 @@ coordinates: dict[str, float] = {
     "latitude": 43.243757,
     "longitude": 5.365660,
     "speed" : 6.0,
-    "heading" : 285.00
+    "cog" : 294.00
 }
 
 class CoordinatesManager:
     @staticmethod
-    def update_coordinates(latitude: float, longitude: float,speed: float,heading: float) -> dict[str, float]:
+    def update_coordinates(latitude: float, longitude: float,speed: float,cog: float) -> dict[str, float]:
         try:
             global coordinates
             # Vérification et conversion des types
             lat = float(latitude)
             lon = float(longitude)
             vit=float(speed)
-            cap=float(heading)
+            cap=float(cog)
 
             # Mise à jour du dictionnaire
             coordinates.update({
                 "latitude": lat,
                 "longitude": lon,
                 "speed": vit,
-                "heading":cap
+                "cog":cap
             })
 
             print(f"Coordonnées mises à jour : latitude={lat}, longitude={lon}")
@@ -908,7 +907,7 @@ async def get_ships():
             "name": "BELLE BRISE",
             "latitude": 43.3,  # Près de Marseille
             "longitude": 5.4,
-            "heading": 90,
+            "cog": 90,
             "sog": 12.5,  # Vitesse en nœuds
             "class": "B"
 
@@ -917,7 +916,7 @@ async def get_ships():
             "mmsi": "987654321",
             "latitude": 43.25,
             "longitude": 5.35,
-            "heading": 180,
+            "cog": 180,
             "sog": 8.3,
             "class": "A"
         },
@@ -925,7 +924,7 @@ async def get_ships():
             "mmsi": "456789123",
             "latitude": 43.28,
             "longitude": 5.38,
-            "heading": 270,
+            "cog": 270,
             "sog": 15.7,
             "class": "B"
         }
