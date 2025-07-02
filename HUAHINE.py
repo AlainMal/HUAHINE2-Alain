@@ -27,6 +27,8 @@ from Package.constante import *
 import os
 import sys
 
+global window
+
 def resource_path(relative_path):
     base_path = getattr(sys, '_MEIPASS', os.path.abspath("."))
     return os.path.join(base_path, relative_path)
@@ -898,37 +900,22 @@ DEFAULT_CONFIG = {
     }
 }
 
+
 @quart_app.route('/get_ships')
 async def get_ships():
-    # Exemple de données de test
-    ships = [
-        {
-            "mmsi": str(123456789),
-            "name": "BELLE BRISE",
-            "latitude": 43.3,  # Près de Marseille
-            "longitude": 5.4,
-            "cog": 90,
-            "sog": 12.5,  # Vitesse en nœuds
-            "class": "B"
+    # Récupération des vrais navires
+    raw_ships = window.nmea_2000.get_all_ais_ships()
 
-        },
-        {
-            "mmsi": "987654321",
-            "latitude": 43.25,
-            "longitude": 5.35,
-            "cog": 180,
-            "sog": 8.3,
-            "class": "A"
-        },
-        {
-            "mmsi": "456789123",
-            "latitude": 43.28,
-            "longitude": 5.38,
-            "cog": 270,
-            "sog": 15.7,
-            "class": "B"
-        }
-    ]
+    # Conversion au format attendu
+    ships = [{
+        "mmsi": ship["ais_mmsi"],
+        "name": ship.get("name", ""),
+        "latitude": ship.get("latitude"),
+        "longitude": ship.get("longitude"),
+        "cog": ship.get("cog"),
+        "sog": ship.get("sog"),
+        "class": ship.get("classe")
+    } for ship in raw_ships]
 
     # Pour déboguer, affichons les données dans la console
     print("Envoi des données AIS:", ships)

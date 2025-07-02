@@ -1,5 +1,5 @@
 class MMSI:
-    def __init__(self):
+    def __init__(self,table):
 
         # Variables statiques partagées entre les instances
         self._nom_bateau_a = ""
@@ -12,7 +12,7 @@ class MMSI:
         self._position_mmsi_b = 0
         self._donnees_mmsi_b = 0
 
-        self._table = []  # Une table (liste) pour stocker les données
+        self._table = table  # Une table (liste) pour stocker les données
 
     def __existe_dans_table(self, mmsi):
         """
@@ -20,37 +20,51 @@ class MMSI:
         Renvoie l'élément correspondant ou None.
         """
         for item in self._table:
-            if item["mmsi"] == mmsi:
+            if item["ais_mmsi"] == mmsi:
                 return item
         return None
 
-    def mmsi_navires(self, navires_data):
+    def mmsi_navires(self, ais_mmsi=None, name=None, latitude=None, longitude=None, cog=None, sog=None, classe=None):
         """
-        Ajoute ou met à jour plusieurs navires à partir d'une liste de données
+        Ajoute ou met à jour un seul navire avec les données fournies.
+        Ne met à jour que les champs qui ne sont pas None.
         """
-        for navire in navires_data:
-            mmsi = str(navire.get("mmsi"))
-            if not mmsi:
-                continue  # Ignorer les entrées sans MMSI
+        if ais_mmsi is None:
+            return
 
-            bateau_existant = self.__existe_dans_table(mmsi)
+        mmsi = str(ais_mmsi)
+        bateau_existant = self.__existe_dans_table(mmsi)
 
-            if bateau_existant:
-                # Mise à jour des données du bateau existant
-                for cle, valeur in navire.items():
-                    bateau_existant[cle] = valeur
-            else:
-                # Création d'un nouveau bateau avec des valeurs par défaut
-                nouveau_bateau = {
-                    "mmsi": mmsi,
-                    "name": navire.get("name", "Navire inconnu"),
-                    "latitude": navire.get("latitude", 0.0),
-                    "longitude": navire.get("longitude", 0.0),
-                    "cog": navire.get("cog", 0),
-                    "sog": navire.get("sog", 0.0),
-                    "class": navire.get("class", "B")
-                }
-                self._table.append(nouveau_bateau)
+        if bateau_existant:
+            # Mise à jour uniquement des données non None
+            nouveau_dict = {}
+            if name is not None:
+                nouveau_dict["name"] = name
+            if latitude is not None:
+                nouveau_dict["latitude"] = latitude
+            if longitude is not None:
+                nouveau_dict["longitude"] = longitude
+            if cog is not None:
+                nouveau_dict["cog"] = cog
+            if sog is not None:
+                nouveau_dict["sog"] = sog
+            if classe is not None:
+                nouveau_dict["classe"] = classe
+
+            # Met à jour uniquement les champs présents
+            bateau_existant.update(nouveau_dict)
+        else:
+            # Création d'un nouveau bateau
+            nouveau_bateau = {
+                "ais_mmsi": mmsi,
+                "name": name,
+                "latitude": latitude,
+                "longitude": longitude,
+                "cog": cog,
+                "sog": sog,
+                "classe": classe
+            }
+            self._table.append(nouveau_bateau)
 
     def get_all_ships(self):
         """

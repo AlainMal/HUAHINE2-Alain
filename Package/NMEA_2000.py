@@ -11,9 +11,20 @@ from Package.MMSI import *
 class NMEA2000:
     coor = 0
     def __init__(self,main_window):
+
         self.main_window = main_window
+        self._mmsi = None
+        self._name = None
+        self._latitude = None
+        self._longitude = None
+        self._sog = None
+        self._cog = None
+        self._classe = None
+
         self._definition = None
         print("NMEA2000 initialisé.")
+        self._table = []
+        self.mmsi = MMSI(self._table)
 
         self._analyse0 = None
         self._analyse1 = None
@@ -37,13 +48,7 @@ class NMEA2000:
         self._source = None
         self._pgn = None
 
-        self._mmsi = None
-        self._name = None
-        self._latitude = None
-        self._longitude = None
-        self._sog = None
-        self._cog = None
-        self._classe = None
+
 
         self._coor = None
 
@@ -108,6 +113,12 @@ class NMEA2000:
     # ======================================== Fin des mémoires ========================================================
 
 
+    def get_all_ais_ships(self):
+        """
+        Récupère la liste complète des bateaux AIS
+        """
+        return self.mmsi.get_all_ships()
+
     # ============================= Méthodes de récupération des valeurs des octets ====================================
     def octets(self,pgn,datas):
         self._pgn1 = None
@@ -122,6 +133,56 @@ class NMEA2000:
 
         try:
             match int(pgn):
+                case 129038:
+                    z = (datas[0] & 0x1F)
+                    self._valeurChoisie1 = "N° " + str(z)
+                    self._pgn1 = "AIS Posittion Class A"
+
+                    if z == 0:
+                        self._valeurChoisie2 = datas[6] << 24 | datas[5] << 16 | datas[4] << 8 | datas[3]
+                        self._pgn2 = "MMSI"
+                        self.set_memoire(MEMOIRE_PGN_a7, PGN_129038, z + 1, datas[7])
+
+                        self._mmsi = str(self._valeurChoisie2)
+                        self._classe = "A"
+
+                    elif z == 1:
+                        self._valeurChoisie2 = "{:.6f}".format((datas[3] << 24 | datas[2] << 16 | datas[1] << 8
+                                                                | self.get_memoire(MEMOIRE_PGN_a7, PGN_129038, z))
+                                                               * (10 ** -7))
+                        self._pgn2 = "AIS_A Longitude"
+
+                        self._valeurChoisie3 = "{:.6f}".format((datas[7] << 24 | datas[6] << 16
+                                                                | datas[5] << 8 | datas[4]) * (10 ** -7))
+                        self._pgn3 = "AIS_A Latitude"
+
+                        self._latitude = self._valeurChoisie2
+                        self._longitude = self._valeurChoisie3
+
+                    elif z == 2:
+                        self._valeurChoisie2 = "{:.2f}".format((datas[3] << 8 | datas[2]) * 0.0001 * 180 / math.pi)
+                        self._pgn2 = "AIS_A COG"
+
+                        self._valeurChoisie3 = "{:.2f}".format((datas[5] << 8 | datas[4]) * 0.01 * 1.94384449)
+                        self._pgn3 = "AIS_A SOG"
+
+                        self._cog = self._valeurChoisie2
+                        self._sog = self._valeurChoisie3
+
+                    elif z == 3:
+                        self._valeurChoisie2 = "{:.2f}".format((datas[3] << 8 | datas[2]) * 0.0001 * 180 / math.pi)
+                        self._pgn2 = "AIS_A Heading"
+
+                        # Mettre à jour seulement position, cog, sog
+                        self.mmsi.mmsi_navires(
+                            ais_mmsi=self._mmsi,
+                            latitude=self._latitude,
+                            longitude=self._longitude,
+                            cog=self._cog,
+                            sog=self._sog,
+                            classe="A"
+                        )
+
                 case 129025:
                     self._valeurChoisie1 = "{:.6f}".format((datas[3] << 24 | datas[2] << 16
                                                             | datas[1] << 8 | datas[0]) * (10 ** -7))
@@ -298,48 +359,6 @@ class NMEA2000:
                     self._analyse3 = "Amp " + self._pgn2
                     self._analyse6 = "°C " + self._pgn3
                     self._analyse5 = "°C " + self._pgn3
-
-                case 129038:
-                    z = (datas[0] & 0x1F)
-                    self._valeurChoisie1 = "N° " + str(z)
-                    self._pgn1 = "AIS Posittion Class A"
-
-                    if z == 0:
-                        self._valeurChoisie2 = datas[6] << 24 | datas[5] << 16 | datas[4] << 8 | datas[3]
-                        self._pgn2 = "MMSI"
-                        self.set_memoire(MEMOIRE_PGN_a7,PGN_129038,z + 1,datas[7])
-
-                        self._mmsi = str(self._valeurChoisie2)
-                        self._classe = "A"
-
-                    elif z == 1:
-                        self._valeurChoisie2 = "{:.6f}".format((datas[3] << 24 | datas[2] << 16 | datas[1] << 8
-                                                | self.get_memoire(MEMOIRE_PGN_a7,PGN_129038,z))
-                                                               * (10**-7))
-                        self._pgn2 = "AIS_A Longitude"
-
-                        self._valeurChoisie3 = "{:.6f}".format((datas[7] << 24 | datas[6] << 16
-                                                                | datas[5] << 8 | datas[4] ) * (10**-7))
-                        self._pgn3 = "AIS_A Latitude"
-
-                        self._latitude = self._valeurChoisie2
-                        self._longitude = self._valeurChoisie3
-
-                    elif z == 2:
-                        self._valeurChoisie2 = "{:.2f}".format((datas[3] << 8 | datas[2]) * 0.0001 * 180 / math.pi)
-                        self._pgn2 = "AIS_A COG"
-
-                        self._valeurChoisie3 = "{:.2f}".format((datas[5] << 8 | datas[4]) * 0.01 * 1.94384449)
-                        self._pgn3 = "AIS_A SOG"
-
-                        self._cog = self._valeurChoisie2
-                        self._sog = self._valeurChoisie3
-
-                    elif z == 3:
-                        self._valeurChoisie2 = "{:.2f}".format((datas[3] << 8 | datas[2]) * 0.0001 * 180 / math.pi)
-                        self._pgn2 = "AIS_A Heading"
-
-                        # MMSI.mmsi_navires(self,self._table)
 
                 case 129794:
                     z = (datas[0] & 0x1F)
