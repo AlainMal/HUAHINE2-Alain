@@ -1,29 +1,5 @@
-class AISData:
-    def __init__(self, mmsi, latitude, longitude, heading):
-        self.mmsi = mmsi
-        self.latitude = latitude
-        self.longitude = longitude
-        self.heading = heading
-
-
-
-
-# Classe permettant de lister les MMSI en temps réel.
-def creer_navire(mmsi, name, lat, lon, heading, sog, ship_class):
-    return {
-        "mmsi": str(mmsi),
-        "name": name,
-        "latitude": lat,
-        "longitude": lon,
-        "heading": heading,
-        "sog": sog,
-        "class": ship_class
-    }
-
-
 class MMSI:
-    def __init__(self,pgn):
-        self._pgn = pgn
+    def __init__(self):
 
         # Variables statiques partagées entre les instances
         self._nom_bateau_a = ""
@@ -37,7 +13,6 @@ class MMSI:
         self._donnees_mmsi_b = 0
 
         self._table = []  # Une table (liste) pour stocker les données
-
 
     def __existe_dans_table(self, mmsi):
         """
@@ -71,7 +46,7 @@ class MMSI:
                     "name": navire.get("name", "Navire inconnu"),
                     "latitude": navire.get("latitude", 0.0),
                     "longitude": navire.get("longitude", 0.0),
-                    "heading": navire.get("heading", 0),
+                    "cog": navire.get("cog", 0),
                     "sog": navire.get("sog", 0.0),
                     "class": navire.get("class", "B")
                 }
@@ -84,10 +59,10 @@ class MMSI:
         return self._table
 
     # Création des données
-    navires_data = [
-        creer_navire("123456789", "BELLE BRISE", 43.3, 5.4, 90, 12.5, "B"),
-        creer_navire("987654321", "GRAND BLEU", 43.25, 5.35, 180, 8.3, "A")
-    ]
+    #navires_data = [
+    #   creer_navire("123456789", "BELLE BRISE", 43.3, 5.4, 90, 12.5, "B"),
+    #    creer_navire("987654321", "GRAND BLEU", 43.25, 5.35, 180, 8.3, "A")
+    #]
 
     # Appel de la méthode
     # mmsi_navires(navires_data)

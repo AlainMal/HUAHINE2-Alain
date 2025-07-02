@@ -1,6 +1,7 @@
 import math
 import asyncio
 from Package.constante import *
+from Package.MMSI import *
 
 # **********************************************************************************************************************
 #       Programme d'analyse des trames du bus CAN et les transforment en NMEA 2000
@@ -35,6 +36,14 @@ class NMEA2000:
         self._destination = None
         self._source = None
         self._pgn = None
+
+        self._mmsi = None
+        self._name = None
+        self._latitude = None
+        self._longitude = None
+        self._sog = None
+        self._cog = None
+        self._classe = None
 
         self._coor = None
 
@@ -300,6 +309,9 @@ class NMEA2000:
                         self._pgn2 = "MMSI"
                         self.set_memoire(MEMOIRE_PGN_a7,PGN_129038,z + 1,datas[7])
 
+                        self._mmsi = str(self._valeurChoisie2)
+                        self._classe = "A"
+
                     elif z == 1:
                         self._valeurChoisie2 = "{:.6f}".format((datas[3] << 24 | datas[2] << 16 | datas[1] << 8
                                                 | self.get_memoire(MEMOIRE_PGN_a7,PGN_129038,z))
@@ -310,6 +322,9 @@ class NMEA2000:
                                                                 | datas[5] << 8 | datas[4] ) * (10**-7))
                         self._pgn3 = "AIS_A Latitude"
 
+                        self._latitude = self._valeurChoisie2
+                        self._longitude = self._valeurChoisie3
+
                     elif z == 2:
                         self._valeurChoisie2 = "{:.2f}".format((datas[3] << 8 | datas[2]) * 0.0001 * 180 / math.pi)
                         self._pgn2 = "AIS_A COG"
@@ -317,9 +332,14 @@ class NMEA2000:
                         self._valeurChoisie3 = "{:.2f}".format((datas[5] << 8 | datas[4]) * 0.01 * 1.94384449)
                         self._pgn3 = "AIS_A SOG"
 
+                        self._cog = self._valeurChoisie2
+                        self._sog = self._valeurChoisie3
+
                     elif z == 3:
                         self._valeurChoisie2 = "{:.2f}".format((datas[3] << 8 | datas[2]) * 0.0001 * 180 / math.pi)
                         self._pgn2 = "AIS_A Heading"
+
+                        # MMSI.mmsi_navires(self,self._table)
 
                 case 129794:
                     z = (datas[0] & 0x1F)
