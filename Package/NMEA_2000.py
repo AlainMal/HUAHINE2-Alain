@@ -48,7 +48,8 @@ class NMEA2000:
         self._source = None
         self._pgn = None
 
-
+        # Dictionnaire pour stocker les données temporaires par MMSI
+        self._temp_data = {}
 
         self._coor = None
 
@@ -136,15 +137,26 @@ class NMEA2000:
                 case 129038:
                     z = (datas[0] & 0x1F)
                     self._valeurChoisie1 = "N° " + str(z)
-                    self._pgn1 = "AIS Posittion Class A"
+                    self._pgn1 = "AIS Position Class A"
 
                     if z == 0:
                         self._valeurChoisie2 = datas[6] << 24 | datas[5] << 16 | datas[4] << 8 | datas[3]
                         self._pgn2 = "MMSI"
-                        self.set_memoire(MEMOIRE_PGN_a7, PGN_129038, z + 1, datas[7])
+                        mmsi_courant = str(self._valeurChoisie2)
 
-                        self._mmsi = str(self._valeurChoisie2)
+                        # Initialiser ou réinitialiser les données temporaires pour ce MMSI
+                        self._temp_data[mmsi_courant] = {
+                            'mmsi': mmsi_courant,
+                            'latitude': None,
+                            'longitude': None,
+                            'cog': None,
+                            'sog': None,
+                            'name': None,
+                            'classe': 'A'
+                        }
+                        self._mmsi = mmsi_courant
                         self._classe = "A"
+                        self.set_memoire(MEMOIRE_PGN_a7, PGN_129038, z + 1, datas[7])
 
                     elif z == 1:
                         self._valeurChoisie2 = "{:.6f}".format((datas[3] << 24 | datas[2] << 16 | datas[1] << 8
@@ -156,8 +168,14 @@ class NMEA2000:
                                                                 | datas[5] << 8 | datas[4]) * (10 ** -7))
                         self._pgn3 = "AIS_A Latitude"
 
-                        self._latitude = self._valeurChoisie2
-                        self._longitude = self._valeurChoisie3
+                        # Mettre à jour les données temporaires pour tous les MMSI en attente
+                        for mmsi_data in self._temp_data.values():
+                            if mmsi_data['latitude'] is None:
+                                mmsi_data['latitude'] = self._valeurChoisie3
+                                mmsi_data['longitude'] = self._valeurChoisie2
+
+                        self._latitude = self._valeurChoisie3
+                        self._longitude = self._valeurChoisie2
 
                     elif z == 2:
                         self._valeurChoisie2 = "{:.2f}".format((datas[3] << 8 | datas[2]) * 0.0001 * 180 / math.pi)
@@ -166,6 +184,12 @@ class NMEA2000:
                         self._valeurChoisie3 = "{:.2f}".format((datas[5] << 8 | datas[4]) * 0.01 * 1.94384449)
                         self._pgn3 = "AIS_A SOG"
 
+                        # Mettre à jour les données temporaires pour tous les MMSI en attente
+                        for mmsi_data in self._temp_data.values():
+                            if mmsi_data['cog'] is None:
+                                mmsi_data['cog'] = self._valeurChoisie2
+                                mmsi_data['sog'] = self._valeurChoisie3
+
                         self._cog = self._valeurChoisie2
                         self._sog = self._valeurChoisie3
 
@@ -173,15 +197,20 @@ class NMEA2000:
                         self._valeurChoisie2 = "{:.2f}".format((datas[3] << 8 | datas[2]) * 0.0001 * 180 / math.pi)
                         self._pgn2 = "AIS_A Heading"
 
-                        # Mettre à jour seulement position, cog, sog
-                        self.mmsi.mmsi_navires(
-                            ais_mmsi=self._mmsi,
-                            latitude=self._latitude,
-                            longitude=self._longitude,
-                            cog=self._cog,
-                            sog=self._sog,
-                            classe="A"
-                        )
+                        # Une fois toutes les données reçues, mettre à jour la base de données
+                        for mmsi, data in list(self._temp_data.items()):
+                            if all(v is not None for v in [data['latitude'], data['longitude'],
+                                                           data['cog'], data['sog']]):
+                                self.mmsi.mmsi_navires(
+                                    ais_mmsi=data['mmsi'],
+                                    latitude=data['latitude'],
+                                    longitude=data['longitude'],
+                                    cog=data['cog'],
+                                    sog=data['sog'],
+                                    classe=data['classe']
+                                )
+                                # Supprimer les données temporaires une fois traitées
+                                del self._temp_data[mmsi]
 
                 case 129025:
                     self._valeurChoisie1 = "{:.6f}".format((datas[3] << 24 | datas[2] << 16
@@ -368,6 +397,20 @@ class NMEA2000:
                     if z == 0:
                         self._valeurChoisie2 = datas[6] << 24 | datas[5] << 16 | datas[4] << 8 | datas[3]
                         self._pgn2 = "MMSI"
+                        mmsi_courant = str(self._valeurChoisie2)
+
+                        # Initialiser ou réinitialiser les données temporaires pour ce MMSI
+                        self._temp_data[mmsi_courant] = {
+                            'mmsi': mmsi_courant,
+                            'latitude': None,
+                            'longitude': None,
+                            'cog': None,
+                            'sog': None,
+                            'name': None,
+                            'classe': 'A'
+                        }
+                        self._mmsi = mmsi_courant
+                        self._classe = "A"
 
                     elif z == 1:
                         self._valeurChoisie2 = "".join([chr(datas[i]) for i in range(4, 8)])
@@ -379,10 +422,22 @@ class NMEA2000:
 
                         self._valeurChoisie3 = "".join([chr(datas[i]) for i in range(4, 8)])
                         self._pgn3 = "Nom du navire"
+                        # Mettre à jour les données temporaires pour tous les MMSI en attente
+                        for mmsi_data in self._temp_data.values():
+                            if mmsi_data['name'] is None:
+                                mmsi_data['name'] = self._valeurChoisie3
 
                     elif z == 3 or z == 4:
                         self._valeurChoisie3 = "".join([chr(datas[i]) for i in range(1, 8)])
                         self._pgn3 = "Nom du navire"
+
+                        # Mettre à jour le nom pour tous les MMSI en attente
+                        for mmsi_data in self._temp_data.values():
+                            if mmsi_data['name'] is not None:  # On vérifie que le nom a déjà été initialisé
+                                mmsi_data['name'] += self._valeurChoisie3
+                                self._name = mmsi_data['name']  # Mise à jour du nom complet
+
+                        self._name = self._valeurChoisie3
 
                     elif z == 5:
                         self._valeurChoisie2 = "{:.2f}".format((datas[5] << 8 | datas[4]) * 0.1)
@@ -406,6 +461,16 @@ class NMEA2000:
                         self._valeurChoisie2 = "".join([chr(datas[i]) for i in range(1, 8)])
                         self._pgn2 = "Destinaion"
 
+                        # Une fois toutes les données reçues, mettre à jour la base de données
+                        for mmsi, data in list(self._temp_data.items()):
+                            if all(v is not None for v in [data['name']]):
+                                self.mmsi.mmsi_navires(
+                                    ais_mmsi=data['mmsi'],
+                                    name=data['name']
+                                )
+                                # Supprimer les données temporaires une fois traitées
+                                del self._temp_data[mmsi]
+
                 case 129809:
                     z = (datas[0] & 0x1F)
                     self._valeurChoisie1 = "N° " + str(z)
@@ -415,16 +480,60 @@ class NMEA2000:
                         self._valeurChoisie2 = datas[6] << 24 | datas[5] << 16 | datas[4] << 8 | datas[3]
                         self._pgn2 = "MMSI"
 
-                        self._valeurChoisie2 = chr(datas[7])
-                        self._pgn2 = "Nom du navire"
+                        self._valeurChoisie3 = chr(datas[7])
+                        self._pgn3 = "Nom du navire"
+
+                        mmsi_courant = str(self._valeurChoisie2)
+
+                        # Initialiser ou réinitialiser les données temporaires pour ce MMSI
+                        self._temp_data[mmsi_courant] = {
+                            'mmsi': mmsi_courant,
+                            'latitude': None,
+                            'longitude': None,
+                            'cog': None,
+                            'sog': None,
+                            'name': None,
+                            'classe': 'B'
+                        }
+                        self._mmsi = mmsi_courant
+                        self._classe = "B"
+
+                        # Mettre à jour les données temporaires pour tous les MMSI en attente
+                        for mmsi_data in self._temp_data.values():
+                            if mmsi_data['name'] is None:
+                                mmsi_data['name'] = self._valeurChoisie3
 
                     elif z == 1:
                         self._valeurChoisie2 = "".join([chr(datas[i]) for i in range(1, 8)])
                         self._pgn2 = "Nom du navire"
 
+                        # Mettre à jour le nom pour tous les MMSI en attente
+                        for mmsi_data in self._temp_data.values():
+                            if mmsi_data['name'] is not None:  # On vérifie que le nom a déjà été initialisé
+                                mmsi_data['name'] += self._valeurChoisie2
+                                self._name = mmsi_data['name']  # Mise à jour du nom complet
+
                     elif z == 2:
                         self._valeurChoisie2 = "".join([chr(datas[i]) for i in range(1, 6)])
                         self._pgn2 = "Nom du navire"
+
+                        self._name = self._valeurChoisie2
+
+                        # Mettre à jour le nom pour tous les MMSI en attente
+                        for mmsi_data in self._temp_data.values():
+                            if mmsi_data['name'] is not None:  # On vérifie que le nom a déjà été initialisé
+                                mmsi_data['name'] += self._valeurChoisie2
+                                self._name = mmsi_data['name']  # Mise à jour du nom complet
+
+                            # Une fois toutes les données reçues, mettre à jour la base de données
+                            for mmsi, data in list(self._temp_data.items()):
+                                if all(v is not None for v in [data['name']]):
+                                    self.mmsi.mmsi_navires(
+                                        ais_mmsi=data['mmsi'],
+                                        name=data['name']
+                                    )
+                                    # Supprimer les données temporaires une fois traitées
+                                    del self._temp_data[mmsi]
 
                 case 129039:
                     z = (datas[0] & 0x1F)
@@ -434,6 +543,21 @@ class NMEA2000:
                     if z == 0:
                         self._valeurChoisie2 = datas[6] << 24 | datas[5] << 16 | datas[4] << 8 | datas[3]
                         self._pgn2 = "MMSI"
+
+                        mmsi_courant = str(self._valeurChoisie2)
+
+                        # Initialiser ou réinitialiser les données temporaires pour ce MMSI
+                        self._temp_data[mmsi_courant] = {
+                            'mmsi': mmsi_courant,
+                            'latitude': None,
+                            'longitude': None,
+                            'cog': None,
+                            'sog': None,
+                            'name': None,
+                            'classe': 'B'
+                        }
+                        self._mmsi = mmsi_courant
+                        self._classe = "B"
 
                         self.set_memoire(MEMOIRE_PGN_a7, PGN_129039, z + 1, datas[7])
 
@@ -446,6 +570,15 @@ class NMEA2000:
                                                                 | datas[5] << 8 | datas[4] ) * (10**-7))
                         self._pgn3 = "AIS_B Latitude"
 
+                        self._latitude = self._valeurChoisie3
+                        self._longitude = self._valeurChoisie2
+
+                        # Mettre à jour les données temporaires pour tous les MMSI en attente
+                        for mmsi_data in self._temp_data.values():
+                            if mmsi_data['latitude'] is None:
+                                mmsi_data['latitude'] = self._valeurChoisie3
+                                mmsi_data['longitude'] = self._valeurChoisie2
+
                     elif z == 2:
                         self._valeurChoisie2 = "{:.2f}".format((datas[3] << 8 | datas[2]) * 0.0001 * 180 / math.pi)
                         self._pgn2 = "AIS_B COG"
@@ -453,9 +586,33 @@ class NMEA2000:
                         self._valeurChoisie3 = "{:.2f}".format((datas[5] << 8 | datas[4]) * 0.01 * 1.94384449)
                         self._pgn3 = "AIS_B SOG"
 
+                        self._cog = self._valeurChoisie2
+                        self._sog = self._valeurChoisie3
+
+                        # Mettre à jour les données temporaires pour tous les MMSI en attente
+                        for mmsi_data in self._temp_data.values():
+                            if mmsi_data['cog'] is None:
+                                mmsi_data['cog'] = self._valeurChoisie2
+                                mmsi_data['sog'] = self._valeurChoisie3
+
                     elif z == 3:
                         self._valeurChoisie2 = "{:.2f}".format((datas[3] << 8 | datas[2]) * 0.0001 * 180 / math.pi)
                         self._pgn2 = "AIS_B Heading"
+
+                        # Une fois toutes les données reçues, mettre à jour la base de données
+                        for mmsi, data in list(self._temp_data.items()):
+                            if all(v is not None for v in [data['latitude'], data['longitude'],
+                                                           data['cog'], data['sog']]):
+                                self.mmsi.mmsi_navires(
+                                    ais_mmsi=data['mmsi'],
+                                    latitude=data['latitude'],
+                                    longitude=data['longitude'],
+                                    cog=data['cog'],
+                                    sog=data['sog'],
+                                    classe=data['classe']
+                                )
+                                # Supprimer les données temporaires une fois traitées
+                                del self._temp_data[mmsi]
 
                 case 129810:
                     z = (datas[0] & 0x1F)
