@@ -1,17 +1,6 @@
 class MMSI:
     def __init__(self,table):
 
-        # Variables statiques partagées entre les instances
-        self._nom_bateau_a = ""
-        self._nom_bateau_b = ""
-        self._indicatif_a = ""
-        self._indicatif_b = ""
-        self._destination_bateau_a = ""
-        self._position_mmsi_a = 0
-        self._donnees_mmsi_a = 0
-        self._position_mmsi_b = 0
-        self._donnees_mmsi_b = 0
-
         self._table = table  # Une table (liste) pour stocker les données
 
     def __existe_dans_table(self, mmsi):
