@@ -231,6 +231,12 @@ class CANApplication(QMainWindow):
     # Méthode pour ouvrir la fenêtre des Status ------------------------------------------------------------------------
     def on_click_status(self):
         try:
+            # Si la fenêtre est déjà ouverte, on la ferme
+            if self._fenetre_status is not None and self._fenetre_status.isVisible():
+                self._fenetre_status.close()
+                self._fenetre_status = None
+                return None
+
             if self._encours:
                 self._status = self._can_interface.status()
 

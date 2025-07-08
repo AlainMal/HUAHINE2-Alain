@@ -40,7 +40,7 @@ MEMOIRE_PGN_a5 = 5
 MEMOIRE_PGN_a6 = 6
 MEMOIRE_PGN_a7 = 7
 
-# ------------------------- Dictionnaire des significations des valeurs reçues dans les tables --------------------------------------
+# ------------------------- Dictionnaires des significations des valeurs reçues dans les tables ------------------------
 # Table des températures.
 TEMPERATURE = {
 0:	"Température de la mer",
