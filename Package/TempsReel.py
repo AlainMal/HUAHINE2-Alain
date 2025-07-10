@@ -50,5 +50,5 @@ class TempsReel:
                 # Fournit le résultat de ma position, pour l'afficher sur la carte en temps réel.
                 pgn =  main_window.nmea_2000.pgn( msg.ID)
                 main_window.nmea_2000.octets(pgn, msg.data) # Ce qui est fait dans "octets".
-                # On profite du temps réel pour afficher les bateau MMSI dans octets() sur NMEA 2000.
+                # On profite du temps réel pour afficher les bateaux MMSI dans octets() sur NMEA 2000.
             # =================================================================================
