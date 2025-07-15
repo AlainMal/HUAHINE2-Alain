@@ -60,12 +60,3 @@ class MMSI:
         Retourne tous les navires dans le format attendu
         """
         return self._table
-
-    # Création des données
-    #navires_data = [
-    #   creer_navire("123456789", "BELLE BRISE", 43.3, 5.4, 90, 12.5, "B"),
-    #    creer_navire("987654321", "GRAND BLEU", 43.25, 5.35, 180, 8.3, "A")
-    #]
-
-    # Appel de la méthode
-    # mmsi_navires(navires_data)

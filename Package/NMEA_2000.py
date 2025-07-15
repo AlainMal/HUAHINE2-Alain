@@ -791,7 +791,7 @@ class NMEA2000:
                     self._pgn1 = "Satélites en vues"
 
                     if z == 0:
-                        self._valeurChoisie2 = datas[5]
+                        self._valeurChoisie2 = datas[2] & 0x7F
                         self._pgn2 = "Nombre de satélites"
 
                 case 129284:

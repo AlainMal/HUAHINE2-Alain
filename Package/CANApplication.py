@@ -294,7 +294,7 @@ class FenetreStatus(QMainWindow):
         self._treewidget.setHeaderLabels(["Désignations", "Etats"])
         self.setCentralWidget(self._treewidget)
 
-        self._treewidget.setColumnWidth(0, 230)  # Définit la largeur de la première colonne à 200 pixels
+        self._treewidget.setColumnWidth(0, 230)  # Définit la largeur de la première colonne à 230 pixels
         self._treewidget.setColumnWidth(1, 7)
 
         # Remplir le TreeWidget.

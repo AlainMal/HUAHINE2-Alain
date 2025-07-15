@@ -553,7 +553,7 @@ class MainWindow(QMainWindow):
         return None
 
 
-        # Méthode pour exporter le fichier texte vers le fichier NMEA 2000 en CSV. -------------------------------------
+    # Méthode pour exporter le fichier texte vers le fichier NMEA 2000 en CSV. -----------------------------------------
     def on_click_Export(self):
         if not self._file_path_csv:
             # Récupérer le chemin du fichier où sauvegarder le CSV.
@@ -807,7 +807,7 @@ class MainWindow(QMainWindow):
             print(f"Erreur lors du lancement du serveur: {error}")
             QMessageBox.critical(self, "Erreur", f"Erreur du serveur: {str(error)}")
 
-    async def arreter_quart(self):
+    async def arreter_quart(self): # -----------------------------------------------------------------------------------
         """Arrête proprement le serveur Quart"""
         if hasattr(self, 'quart_task') and self.quart_task and not self.quart_task.done():
             try:
@@ -834,7 +834,7 @@ class MainWindow(QMainWindow):
             except Exception as error:
                 print(f"Erreur lors de l'arrêt du serveur Quart: {error}")
 
-    def on_click_map(self):
+    def on_click_map(self): # ------------------------------------------------------------------------------------------
         """Gestionnaire du clic sur le bouton Map"""
         try:
             print("Bouton 'Map' cliqué !")
