@@ -9,6 +9,7 @@ a = Analysis(
         ('aide/static/*', 'aide/static'),
         ('Alain.ui', '.'),
         ('icones/*', 'icones/'),
+	('images/*','images'),
         ('templates/index.html', 'templates/'),
         ('aide/templates/*.html', 'templates/aide/'),
         ('static/icone/*.ico', 'static/icone/'),
