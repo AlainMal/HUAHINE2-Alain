@@ -922,18 +922,20 @@ async def get_ships():
 
     return jsonify(ships)
 
+
 @quart_app.route('/')
 @quart_app.route('/map')
 async def map_page():
     try:
-        # Ajout du logging ici
+        # Vous pouvez maintenant utiliser n'importe quelle carte comme carte par défaut
+        default_mbtiles = 'static/cartes1.mbtiles'
+
         logging.info(
             f"Coordonnées envoyées : {DEFAULT_CONFIG['center']['latitude']}, {DEFAULT_CONFIG['center']['longitude']}")
 
-        conn = sqlite3.connect('static/cartes.mbtiles')
+        conn = sqlite3.connect(default_mbtiles)
         cursor = conn.cursor()
 
-        # Récupérer les bounds depuis les métadonnées
         cursor.execute("SELECT value FROM metadata WHERE name='bounds'")
         bounds = cursor.fetchone()
         if bounds:
@@ -963,21 +965,28 @@ async def map_page():
         )
 
 
-@quart_app.route('/tile/<int:z>/<int:x>/<int:y>')
-async def serve_tile(z, x, y):
-    print(f"Demande de tuile : z={z}, x={x}, y={y}")
+# Ajoutez cette route pour gérer les différentes cartes MBTiles
+@quart_app.route('/tile/<string:map_name>/<int:z>/<int:x>/<int:y>')
+async def serve_tile(map_name, z, x, y):
+    print(f"Demande de tuile : carte={map_name}, z={z}, x={x}, y={y}")
     try:
-        print(f"Coordonnées reçues : z={z}, x={x}, y={y}")
-        # Testez les deux formats
-        y_tms_1 = (1 << z) - 1 - y
-        print(f"Coordonnée Y convertie (TMS) : {y_tms_1}")
-        print(f"Coordonnée Y non convertie : {y}")
+        # Mapping des noms de cartes vers les fichiers MBTiles
+        mbtiles_files = {
+            'cartes1.mbtiles': 'static/cartes1.mbtiles',
+            'cartes2.mbtiles': 'static/cartes2.mbtiles',
+            'cartes3.mbtiles': 'static/cartes3.mbtiles'
+        }
 
-        conn = sqlite3.connect('static/cartes.mbtiles')
-        cursor = conn.cursor()
+        # Vérifier si la carte demandée existe
+        if map_name not in mbtiles_files:
+            return Response('Carte non trouvée', status=404)
 
-        # Dans MBTiles, y est inversé pour le format TMS
+        # Calculer la coordonnée Y pour le format TMS
         y_tms = y
+
+        # Connexion à la base MBTiles appropriée
+        conn = sqlite3.connect(mbtiles_files[map_name])
+        cursor = conn.cursor()
 
         cursor.execute('''
             SELECT tile_data FROM tiles 
@@ -988,17 +997,17 @@ async def serve_tile(z, x, y):
         conn.close()
 
         if tile_data:
-            print(f"Tuile trouvée pour z={z}, x={x}, y={y}")
+            print(f"Tuile trouvée pour {map_name} z={z}, x={x}, y={y}")
             return Response(
                 tile_data[0],
                 mimetype='image/png'
             )
         else:
-            print(f"Tuile non trouvée pour z={z}, x={x}, y={y}")
+            print(f"Tuile non trouvée pour {map_name} z={z}, x={x}, y={y}")
             return Response('', status=404)
 
     except Exception as e:
-        print(f"Erreur pour la tuile z={z}, x={x}, y={y}: {e}")
+        print(f"Erreur pour la tuile {map_name} z={z}, x={x}, y={y}: {e}")
         return Response('', status=500)
 
 @quart_app.route('/tiles/<int:z>/<int:x>/<int:y>.png')

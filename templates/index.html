@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Carte MediWest</title>
+    <title>Cartes Navigation</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
     <style>
         html, body { height: 100%; margin: 0; }
@@ -58,9 +58,14 @@
             color: #666;
         }
         .leaflet-control-layers {
+            position: absolute !important;
+            top: 90px !important;
+            right: 0px !important;
             background: white;
             padding: 10px;
             border-radius: 4px;
+            width: 130px !important;
+            min-width: 130px !important;
         }
         .ship-marker {
             display: flex;
@@ -87,6 +92,7 @@
     </style>
 </head>
 <body>
+
     <div id="map"></div>
     <div id="info"></div>
     <div class="legend">
@@ -95,6 +101,8 @@
         <button onclick="updateProjectionTime()">Appliquer</button>
         <div id="projectionInfo"></div>
     </div>
+
+
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
@@ -155,19 +163,41 @@ const customIcon = L.divIcon({
 
 
         // Couche MBTiles
-        var mbtilesLayer = L.tileLayer('/tile/{z}/{x}/{y}', {
-            tms: true,
-            opacity: 0.7,
-            attribution: 'MBTiles Map',
-            maxZoom: 18,
-            minZoom: 2
-        }).addTo(map);
+// Définition des différentes couches MBTiles
+var mondeTileLayer = L.tileLayer('/tile/cartes1.mbtiles/{z}/{x}/{y}', {
+    tms: true,
+    opacity: 0.7,
+    attribution: 'MBTiles Map - Monde',
+    maxZoom: 18,
+    minZoom: 2
+});
 
-        // Contrôle des couches
-        var baseMaps = {
-            //"OpenStreetMap": osm,
-            "Carte Marine": mbtilesLayer
-        };
+var merTileLayer = L.tileLayer('/tile/cartes2.mbtiles/{z}/{x}/{y}', {
+    tms: true,
+    opacity: 0.7,
+    attribution: 'MBTiles Map - Marseille',
+    maxZoom: 18,
+    minZoom: 2
+});
+
+var navionicsTileLayer = L.tileLayer('/tile/cartes3.mbtiles/{z}/{x}/{y}', {
+    tms: true,
+    opacity: 0.7,
+    attribution: 'MBTiles Map - Navionics',
+    maxZoom: 18,
+    minZoom: 2
+});
+
+// Ajout de la couche par défaut
+mondeTileLayer.addTo(map);
+
+// Contrôle des couches avec les différentes cartes
+var baseMaps = {
+    "Carte Monde": mondeTileLayer,
+    "Carte Marseille": merTileLayer,
+    "Carte Navionics": navionicsTileLayer
+};
+
         L.control.layers(baseMaps, null, {collapsed: false}).addTo(map);
 
         // Marqueur principal
@@ -305,6 +335,7 @@ const customIcon = L.divIcon({
             }
         }
 
+
 // Fonction de mise à jour de la position principale
 async function updatePosition() {
     try {
@@ -372,7 +403,7 @@ async function updatePosition() {
 }
 
         // Intervalles de mise à jour
-        //const updateInterval = setInterval(updatePosition, 3000);
+        const updateInterval = setInterval(updatePosition, 3000);
         const aisUpdateInterval = setInterval(updateAISData, 10000);
 
         // Premier appel immédiat pour les données AIS
