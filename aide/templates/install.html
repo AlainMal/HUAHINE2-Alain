@@ -11,7 +11,7 @@
 <h1>Installer</h1>
 
 <div class="section">
-    <h2>Comment installer l'application</h2>
+    <h2>Comment installer l'application sur le réseau NMEA 2000.</h2>
     <ol>
         <li>Il faut simplement récuperer le répertoire "HUAHINE".
             <ull>
@@ -104,6 +104,7 @@
         <pre><code class="python">
             import ctypes
 from ctypes import Structure, c_ubyte,c_long, c_int, POINTER, Array
+from Package.constante import *
 
 class CanData(Array):
     _type_ = c_ubyte
@@ -147,6 +148,9 @@ class CANDll:
         self._dll.canusb_Read.restype = c_int
         # Fonction STATUS
         self._dll.canusb_Status.restype = c_int
+        # Fonction FLUSH
+        self._dll.canusb_Flush.restype = c_int
+        self._dll.canusb_Flush.argtypes = [c_long,c_long]
         # Il y en a d'autres, mais pour l'instant ne sont pas utiles
 
         self._handle = None
@@ -195,6 +199,7 @@ class CANDll:
     # Méthode de fermeture de l'adaptateur. ----------------------------------------------------------------------------
     def close(self):
         if self._handle is not None:
+            self._dll.canusb_Flush(self._handle, FLUSH_WAIT)
             self._dll.canusb_Close(self._handle)
             self._handle = None
 
