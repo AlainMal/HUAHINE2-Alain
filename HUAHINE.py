@@ -897,7 +897,6 @@ DEFAULT_CONFIG = {
     }
 }
 
-
 @quart_app.route('/get_ships')
 async def get_ships():
     # Récupération des vrais navires
