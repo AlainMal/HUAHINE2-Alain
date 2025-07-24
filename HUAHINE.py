@@ -391,7 +391,7 @@ class MainWindow(QMainWindow):
                 self.can_interface_app.on_click_close()
                 print("Fermeture de la fenêtre principale")
 
-            # Permettre la mise en veille
+            # Permettre la mise en veille en Windows
             ctypes.windll.kernel32.SetThreadExecutionState(ES_CONTINUOUS)
 
         except Exception as error:
