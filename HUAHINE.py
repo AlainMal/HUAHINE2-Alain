@@ -959,7 +959,6 @@ async def map_page():
             **DEFAULT_CONFIG['bounds']
         )
 
-
 # Ajoutez cette route pour gérer les différentes cartes MBTiles
 @quart_app.route('/tile/<string:map_name>/<int:z>/<int:x>/<int:y>')
 async def serve_tile(map_name, z, x, y):
