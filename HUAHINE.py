@@ -570,7 +570,6 @@ class MainWindow(QMainWindow):
                                                   "",
                                                   "Fichier csv (*.csv);;Tous les fichiers (*.*)")
 
-
         if not self._file_path_csv:
             return
         else:
