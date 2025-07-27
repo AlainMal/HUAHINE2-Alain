@@ -89,12 +89,37 @@
     height: 24px;
 }
 
+.center-button {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 1000;
+    width: 40px;
+    height: 40px;
+    background: white;
+    border: 2px solid rgba(0,0,0,0.2);
+    border-radius: 4px;
+    cursor: pointer;
+    padding: 0;
+    font-size: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.center-button:hover {
+    background-color: #f4f4f4;
+}
+
     </style>
 </head>
 <body>
 
     <div id="map"></div>
     <div id="info"></div>
+    <button class="center-button" onclick="centerOnBoat()" title="Centrer sur le bateau">🔼</button>
+
     <div class="legend">
         <label for="projectionTime">Temps de projection (heures):</label>
         <input type="number" id="projectionTime" min="0.1" max="24" step="0.25" value="0.15">
@@ -194,7 +219,7 @@ mondeTileLayer.addTo(map);
 // Contrôle des couches avec les différentes cartes
 var baseMaps = {
     "Carte Monde": mondeTileLayer,
-    "Carte Marseille": merTileLayer,
+    "Carte SonarChart": merTileLayer,
     "Carte Navionics": navionicsTileLayer
 };
 
@@ -220,7 +245,7 @@ var baseMaps = {
             dashArray: '5, 5'
         }).addTo(map);
 
-        updateInfo(`Zoom: ${map.getZoom()}<br>Position: ${initialPosition[0].toFixed(5)}, ${initialPosition[1].toFixed(5)}`);
+        updateInfo(`Zoom: ${map.getZoom()+1}<br>Position: ${initialPosition[0].toFixed(5)}, ${initialPosition[1].toFixed(5)}`);
 
         // Stockage des marqueurs AIS et des lignes de vitesse
         var aisMarkers = {};
@@ -391,7 +416,7 @@ async function updatePosition() {
 
             // Mise à jour des informations affichées
             updateInfo(`
-                Zoom: ${map.getZoom()}<br>
+                Zoom: ${map.getZoom()+1}<br>
                 Position: ${data.latitude.toFixed(5)}, ${data.longitude.toFixed(5)}<br>
                 Cap: ${cog}°<br>
                 Vitesse: ${speed.toFixed(1)} nœuds
@@ -412,7 +437,7 @@ async function updatePosition() {
         // Événements de la carte
         map.on('moveend zoomend', () => {
             const center = map.getCenter();
-            updateInfo(`Zoom: ${map.getZoom()}<br>Position: ${center.lat.toFixed(5)}, ${center.lng.toFixed(5)}`);
+            updateInfo(`Zoom: ${map.getZoom()+1}<br>Position: ${center.lat.toFixed(5)}, ${center.lng.toFixed(5)}`);
         });
 
         // Nettoyage à la fermeture
@@ -420,6 +445,12 @@ async function updatePosition() {
             clearInterval(updateInterval);
             clearInterval(aisUpdateInterval);
         };
+
+        function centerOnBoat() {
+            const currentPosition = currentMarker.getLatLng();
+            const currentZoom = map.getZoom();  // Récupère le niveau de zoom actuel
+            map.setView(currentPosition, currentZoom);  // Utilise le zoom actuel au lieu d'une valeur fixe
+       }
     </script>
 </body>
 </html>
