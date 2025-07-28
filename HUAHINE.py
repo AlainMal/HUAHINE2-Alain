@@ -883,7 +883,7 @@ quart_app = Quart(__name__,
                   static_folder='static',
                   template_folder='templates')
 
-# Coordonnées centrées sur le port de la pointe rouge
+# Coordonnées centrées sur le port de la pointe rouge par défaut.
 DEFAULT_CONFIG = {
     "center": {
         "latitude": 43.2438,
@@ -968,11 +968,13 @@ async def serve_tile(map_name, z, x, y):
         mbtiles_files = {
             'cartes1.mbtiles': 'static/cartes1.mbtiles',
             'cartes2.mbtiles': 'static/cartes2.mbtiles',
-            'cartes3.mbtiles': 'static/cartes3.mbtiles'
+            'cartes3.mbtiles': 'static/cartes3.mbtiles',
+            'cartes4.mbtiles': 'static/cartes4.mbtiles'
         }
 
         # Vérifier si la carte demandée existe
         if map_name not in mbtiles_files:
+            print("CARTE NON TROUVEE")
             return Response('Carte non trouvée', status=404)
 
         # Calculer la coordonnée Y pour le format TMS

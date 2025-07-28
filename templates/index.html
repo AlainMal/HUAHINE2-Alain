@@ -92,7 +92,7 @@
 .center-button {
     position: absolute;
     right: 10px;
-    top: 28%;
+    top: 35%;
     transform: translateY(-50%);
     z-index: 1000;
     width: 30px;
@@ -215,6 +215,14 @@ var navionicsTileLayer = L.tileLayer('/tile/cartes3.mbtiles/{z}/{x}/{y}', {
     minZoom: 2
 });
 
+var corseTileLayer = L.tileLayer('/tile/cartes4.mbtiles/{z}/{x}/{y}', {
+    tms: true,
+    opacity: 0.7,
+    attribution: 'MBTiles Map - Navionics',
+    maxZoom: 18,
+    minZoom: 2
+});
+
 // Ajout de la couche par défaut
 mondeTileLayer.addTo(map);
 
@@ -222,7 +230,8 @@ mondeTileLayer.addTo(map);
 var baseMaps = {
     "Carte Monde": mondeTileLayer,
     "Carte SonarChart": merTileLayer,
-    "Carte Navionics": navionicsTileLayer
+    "Carte Navionics": navionicsTileLayer,
+    "Carte Corse": corseTileLayer
 };
 
         L.control.layers(baseMaps, null, {collapsed: false}).addTo(map);
