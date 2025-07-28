@@ -72,7 +72,7 @@
             align-items: center;
             justify-content: center;
         }
-        .ship-icon {
+.ship-icon {
     font-size: 24px;
     transform: rotate(0deg);
     width: 24px;
@@ -92,11 +92,11 @@
 .center-button {
     position: absolute;
     right: 10px;
-    top: 50%;
+    top: 28%;
     transform: translateY(-50%);
     z-index: 1000;
-    width: 40px;
-    height: 40px;
+    width: 30px;
+    height: 30px;
     background: white;
     border: 2px solid rgba(0,0,0,0.2);
     border-radius: 4px;
@@ -118,11 +118,11 @@
 
     <div id="map"></div>
     <div id="info"></div>
-    <button class="center-button" onclick="centerOnBoat()" title="Centrer sur le bateau">🔼</button>
+    <button class="center-button" onclick="centerOnBoat()" title="Centrer sur le bateau">👀</button>
 
     <div class="legend">
-        <label for="projectionTime">Temps de projection (heures):</label>
-        <input type="number" id="projectionTime" min="0.1" max="24" step="0.25" value="0.15">
+        <label for="projectionTime">Temps de projection (minutes):</label>
+        <input type="number" id="projectionTime" min="0" max="1440" step="15" value="15">
         <button onclick="updateProjectionTime()">Appliquer</button>
         <div id="projectionInfo"></div>
     </div>
@@ -150,28 +150,30 @@
             info.innerHTML = text;
         }
 
-        // Fonction pour mettre à jour le temps de projection
-        function updateProjectionTime() {
-            const input = document.getElementById('projectionTime');
-            const newTime = parseFloat(input.value);
+// Fonction pour mettre à jour le temps de projection
+function updateProjectionTime() {
+    const input = document.getElementById('projectionTime');
+    const minutes = parseFloat(input.value);
 
-            if (newTime >= 0.1 && newTime <= 24) {
-                projectionHours = newTime;
-                document.getElementById('projectionInfo').innerHTML =
-                    `Projection sur ${(projectionHours * 60).toFixed(0)} minutes`;
-                // Mettre à jour tous les navires avec la nouvelle projection
-                updateAISData();
-            } else {
-                alert('Veuillez entrer une valeur entre 0.1 et 24 heures');
-                input.value = projectionHours;
-            }
-        }
+    if (minutes >= 0 && minutes <= 1440) {
+        projectionHours = minutes / 60;  // Conversion des minutes en heures
+        document.getElementById('projectionInfo').innerHTML =
+            `Projection sur ${minutes.toFixed(0)} minutes`;
+        // Mettre à jour tous les navires avec la nouvelle projection
+        updateAISData();
+    } else {
+        alert('Veuillez entrer une valeur inférieur à 1440 minutes soit 24 heures');
+        input.value = projectionHours * 60;  // Reconversion en minutes pour l'affichage
+    }
+}
 
-        // Initialisation de l'affichage du temps de projection
-        document.addEventListener('DOMContentLoaded', function() {
-            document.getElementById('projectionInfo').innerHTML =
-                `Projection sur ${(projectionHours * 60).toFixed(0)} minutes`;
-        });
+// Initialisation de l'affichage du temps de projection
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('projectionTime').value = (projectionHours * 60).toFixed(0);
+    document.getElementById('projectionInfo').innerHTML =
+        `Projection sur ${(projectionHours * 60).toFixed(0)} minutes`;
+});
+
 
 // Icône personnalisée pour votre bateau principal
 const customIcon = L.divIcon({
@@ -240,7 +242,7 @@ var baseMaps = {
         // Après la déclaration de polyline, ajoutez :
         var projectionLine = L.polyline([], {
             color: '#1e88e5',
-            weight: 2,
+            weight: 3,
             opacity: 0.8,
             dashArray: '5, 5'
         }).addTo(map);
