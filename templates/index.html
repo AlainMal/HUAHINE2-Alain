@@ -6,7 +6,13 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
     <style>
         html, body { height: 100%; margin: 0; }
-        #map { width: 100%; height: 100vh; }
+        #map {
+            width: 100%;
+            height: 100vh;
+            position: fixed;
+            overflow: hidden;
+        }
+
         #info {
             position: absolute;
             top: 10px;
@@ -73,8 +79,9 @@
             justify-content: center;
         }
 .ship-icon {
+    background-image: url('voilier.png');
     font-size: 24px;
-    transform: rotate(0deg);
+    /* transform: rotate(0deg); */
     width: 24px;
     height: 24px;
     display: flex;
@@ -137,13 +144,17 @@
         // Variable globale pour le temps de projection
         let projectionHours = 0.25;
 
-        var map = L.map('map', {
-            center: initialPosition,
-            zoomSnap: 1,
-            zoomDelta: 1,
-            minZoom: 2,
-            maxZoom: 18
-        }).setView(initialPosition, 13);
+const map = L.map('map', {
+    center: initialPosition,
+    zoomSnap: 1,
+    zoomDelta: 1,
+    minZoom: 2,
+    maxZoom: 18,
+    keepInView: false,  // Empêche le recentrage automatique
+    maxBounds: null,    // Supprime les limites de la carte
+    maxBoundsViscosity: 0  // Désactive la "viscosité" des limites
+}).setView(initialPosition, 13);
+
 
         const info = document.getElementById('info');
         function updateInfo(text) {
@@ -152,6 +163,7 @@
 
 // Fonction pour mettre à jour le temps de projection
 function updateProjectionTime() {
+    updatePosition();
     const input = document.getElementById('projectionTime');
     const minutes = parseFloat(input.value);
 
@@ -191,7 +203,7 @@ const customIcon = L.divIcon({
 
         // Couche MBTiles
 // Définition des différentes couches MBTiles
-var mondeTileLayer = L.tileLayer('/tile/cartes1.mbtiles/{z}/{x}/{y}', {
+const mondeTileLayer = L.tileLayer('/tile/cartes1.mbtiles/{z}/{x}/{y}', {
     tms: true,
     opacity: 0.7,
     attribution: 'MBTiles Map - Monde',
@@ -199,7 +211,7 @@ var mondeTileLayer = L.tileLayer('/tile/cartes1.mbtiles/{z}/{x}/{y}', {
     minZoom: 2
 });
 
-var merTileLayer = L.tileLayer('/tile/cartes2.mbtiles/{z}/{x}/{y}', {
+const merTileLayer = L.tileLayer('/tile/cartes2.mbtiles/{z}/{x}/{y}', {
     tms: true,
     opacity: 0.7,
     attribution: 'MBTiles Map - Marseille',
@@ -207,7 +219,7 @@ var merTileLayer = L.tileLayer('/tile/cartes2.mbtiles/{z}/{x}/{y}', {
     minZoom: 2
 });
 
-var navionicsTileLayer = L.tileLayer('/tile/cartes3.mbtiles/{z}/{x}/{y}', {
+const navionicsTileLayer = L.tileLayer('/tile/cartes3.mbtiles/{z}/{x}/{y}', {
     tms: true,
     opacity: 0.7,
     attribution: 'MBTiles Map - Navionics',
@@ -215,7 +227,7 @@ var navionicsTileLayer = L.tileLayer('/tile/cartes3.mbtiles/{z}/{x}/{y}', {
     minZoom: 2
 });
 
-var corseTileLayer = L.tileLayer('/tile/cartes4.mbtiles/{z}/{x}/{y}', {
+const corseTileLayer = L.tileLayer('/tile/cartes4.mbtiles/{z}/{x}/{y}', {
     tms: true,
     opacity: 0.7,
     attribution: 'MBTiles Map - Navionics',
@@ -227,29 +239,30 @@ var corseTileLayer = L.tileLayer('/tile/cartes4.mbtiles/{z}/{x}/{y}', {
 mondeTileLayer.addTo(map);
 
 // Contrôle des couches avec les différentes cartes
-var baseMaps = {
-    "Carte Monde": mondeTileLayer,
+const baseMaps = {
+    "Carte Planette": mondeTileLayer,
     "Carte SonarChart": merTileLayer,
-    "Carte Navionics": navionicsTileLayer,
-    "Carte Corse": corseTileLayer
+    "Carte Navionics": navionicsTileLayer
 };
 
         L.control.layers(baseMaps, null, {collapsed: false}).addTo(map);
 
         // Marqueur principal
-        var currentMarker = L.marker(initialPosition, { icon: customIcon }).addTo(map)
-            .bindPopup("Salut tout le monde ! Je suis HUAHINE")
-            .openPopup();
+        const currentMarker = L.marker(initialPosition, {
+        icon: customIcon,
+        }).addTo(map)
+        .bindPopup("Salut tout le monde ! Je suis HUAHINE");
+        //.openPopup();
 
         // Suivi de la position
-        var polyline = L.polyline([initialPosition], {
+        const polyline = L.polyline([initialPosition], {
             color: 'red',
             weight: 3,
             opacity: 0.7
         }).addTo(map);
 
         // Après la déclaration de polyline, ajoutez :
-        var projectionLine = L.polyline([], {
+        const projectionLine = L.polyline([], {
             color: '#1e88e5',
             weight: 3,
             opacity: 0.8,
@@ -259,8 +272,8 @@ var baseMaps = {
         updateInfo(`Zoom: ${map.getZoom()+1}<br>Position: ${initialPosition[0].toFixed(5)}, ${initialPosition[1].toFixed(5)}`);
 
         // Stockage des marqueurs AIS et des lignes de vitesse
-        var aisMarkers = {};
-        var speedLines = {};
+        const aisMarkers = {};
+        const speedLines = {};
 
         // Fonction pour convertir les milles nautiques en degrés
         function nauticalMilesToDegrees(nauticalMiles) {
@@ -384,19 +397,16 @@ async function updatePosition() {
         if (data.latitude && data.longitude) {
             const newLatLng = new L.LatLng(data.latitude, data.longitude);
 
-            // Mise à jour du marqueur et de la trace
+            // Mise à jour du marqueur sans recentrer la carte
             currentMarker.setLatLng(newLatLng);
             polyline.addLatLng(newLatLng);
 
             // Calcul de la projection
-            const speed = data.speed || 0; // vitesse en nœuds
-            const cog = data.cog || 0; // cap en degrés
+            const speed = data.speed || 0;
+            const cog = data.cog || 0;
 
-            // Calcul de la distance projetée
             const distanceInNauticalMiles = speed * projectionHours;
             const distanceInDegrees = nauticalMilesToDegrees(distanceInNauticalMiles);
-
-            // Calcul du point final de la projection
             const headingRad = (cog * Math.PI) / 180;
             const endLat = data.latitude + distanceInDegrees * Math.cos(headingRad);
             const endLon = data.longitude + distanceInDegrees * Math.sin(headingRad);
@@ -407,7 +417,7 @@ async function updatePosition() {
                 [endLat, endLon]
             ]);
 
-            // Rotation de l'icône selon le cap
+            // Rotation de l'icône
             const icon = currentMarker.getElement();
             if (icon) {
                 const shipIcon = icon.querySelector('.ship-icon');
@@ -416,8 +426,8 @@ async function updatePosition() {
                 }
             }
 
-            // Mise à jour du popup
-            currentMarker.bindPopup(`
+            // Mise à jour du popup sans l'ouvrir automatiquement
+            currentMarker.setPopupContent(`
                 <strong>HUAHINE</strong><br>
                 Position: ${data.latitude.toFixed(5)}, ${data.longitude.toFixed(5)}<br>
                 Cap: ${cog}°<br>
@@ -425,7 +435,7 @@ async function updatePosition() {
                 Distance projetée: ${distanceInNauticalMiles.toFixed(1)} NM sur ${(projectionHours * 60).toFixed(0)} min
             `);
 
-            // Mise à jour des informations affichées
+            // Mise à jour des informations sans affecter la vue de la carte
             updateInfo(`
                 Zoom: ${map.getZoom()+1}<br>
                 Position: ${data.latitude.toFixed(5)}, ${data.longitude.toFixed(5)}<br>
@@ -437,7 +447,6 @@ async function updatePosition() {
         console.error("Erreur de mise à jour des coordonnées:", err);
     }
 }
-
         // Intervalles de mise à jour
         const updateInterval = setInterval(updatePosition, 3000);
         const aisUpdateInterval = setInterval(updateAISData, 10000);
