@@ -54,3 +54,10 @@ nav li {
     border-left: 4px solid #3498db;
     margin: 15px 0;
 }
+
+.error {
+    background: #FEEBE7;
+    padding: 15px;
+    border-left: 4px solid #F54927;
+    margin: 15px 0;
+}
