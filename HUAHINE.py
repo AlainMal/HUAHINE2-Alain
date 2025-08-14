@@ -16,6 +16,7 @@ from PyQt5.QtGui import QIcon
 from PyQt5.uic import loadUi
 from quart import Quart, render_template, jsonify, Response
 
+
 # Import des packages personnalisés
 from serveur_aide import start_help_server
 from Package.CAN_dll import CANDll
@@ -846,7 +847,7 @@ coordinates: dict[str, float] = {
     "latitude": 43.243757,
     "longitude": 5.365660,
     "speed" : 6.0,
-    "cog" : 294.00
+    "cog" : 90.00
 }
 
 class CoordinatesManager:

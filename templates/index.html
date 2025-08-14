@@ -79,21 +79,18 @@
             justify-content: center;
         }
         .ship-icon {
-            background-image: url('voilier.png');
-            font-size: 24px;
-            /* transform: rotate(0deg); */
             width: 24px;
             height: 24px;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: white;
         }
 
         .ship-icon svg {
-            filter: drop-shadow(0px 0px 2px rgba(0,0,0,0.5));
+            /* filter: drop-shadow(0px 0px 2px rgba(0,0,0,0.5));*/
             width: 24px;
             height: 24px;
+            object-fit: contain;
         }
 
         .center-button {
@@ -119,6 +116,19 @@
             background-color: #0000FF;
         }
 
+    @keyframes dashmove {
+    0% {
+        stroke-dashoffset: 0;
+    }
+    100% {
+        stroke-dashoffset: -20;
+    }
+}
+
+.animated-dash {
+    animation: dashmove 1s linear infinite;
+}
+
     </style>
 </head>
 <body>
@@ -133,7 +143,6 @@
     <button onclick="updateProjectionTime()">Appliquer</button>
     <div id="projectionInfo"></div>
 </div>
-
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
@@ -185,22 +194,98 @@ document.getElementById('projectionInfo').innerHTML =
     `Projection sur ${(projectionHours * 60).toFixed(0)} minutes`;
 });
 
-
 // Icône personnalisée pour votre bateau principal
 const customIcon = L.divIcon({
-html: `<div class="ship-icon" style="transform: rotate(0deg);">
-    <svg viewBox="0 0 100 100" style="width: 32px; height: 32px;">
-        <path fill="#0000FF" stroke="white" stroke-width="2"
-            d="M50,10 L80,80 L50,65 L20,80 Z"/>
-    </svg>
-</div>`,
-className: 'ship-marker',
-iconSize: [32, 32],
-iconAnchor: [16, 16]
+    html: `<div class="ship-icon">
+        <img src="/static/VoilierImage.png"
+             style="transform: rotate(90deg); width: 50px; height: 50px; position: relative;">
+    </div>`,
+    className: '',
+    iconSize: [50, 50],
+    iconAnchor: [25, 25]
 });
 
 
-    // Couche MBTiles
+// Variable globale pour le marker
+let shipMarker = null;
+
+// Fonction pour nettoyer tous les markers de la carte
+const clearAllMarkers = () => {
+    map.eachLayer((layer) => {
+        if (layer instanceof L.Marker) {
+            map.removeLayer(layer);
+        }
+    });
+    shipMarker = null;
+};
+
+// Fonction pour mettre à jour le marker
+const updateShipMarker = (position, angle) => {
+    // Nettoyer d'abord tous les markers
+    clearAllMarkers();
+
+    // Normalisation de l'angle
+    let normalizedAngle = ((angle % 360) + 360) % 360;
+
+    // Détermine si l'image doit être inversée (quand l'angle est entre 0 et 180)
+    const shouldFlip = normalizedAngle > 0 && normalizedAngle < 180;
+
+    // Ajustement de l'angle pour l'orientation correcte de l'image
+    const adjustedAngle = normalizedAngle - 270;
+
+    const customIcon = L.divIcon({
+        html: `<div class="ship-icon" id="unique-ship-icon">
+            <img src="/static/VoilierImage.png"
+                 style="transform:
+                        rotate(${adjustedAngle}deg)
+                        scaleY(${shouldFlip ? -1 : 1});
+                        width: 50px; height: 50px;
+                        transition: all 0.3s ease;">
+        </div>`,
+        className: 'custom-ship-icon',
+        iconSize: [50, 50],
+        iconAnchor: [25, 25]
+    });
+
+    // Créer un nouveau marker
+    shipMarker = L.marker(position, {
+        icon: customIcon
+    }).addTo(map);
+};
+
+// Style CSS pour l'icône
+const style = document.createElement('style');
+style.textContent = `
+    .custom-ship-icon {
+        background: none;
+        border: none;
+    }
+    .ship-icon {
+        width: 50px;
+        height: 50px;
+    }
+    .ship-icon img {
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+    }
+`;
+document.head.appendChild(style);
+
+// Initialisation
+const initializeShip = () => {
+    const initialPosition = [43.2438, 5.3656];
+    updateShipMarker(initialPosition, 0);
+};
+
+// Attendre que la carte soit prête
+map.whenReady(() => {
+    clearAllMarkers(); // Nettoyer avant l'initialisation
+    initializeShip();
+});
+
+
+// Couche MBTiles
 // Définition des différentes couches MBTiles
 const mondeTileLayer = L.tileLayer('/tile/cartes1.mbtiles/{z}/{x}/{y}', {
 tms: true,
@@ -260,13 +345,15 @@ const baseMaps = {
         opacity: 0.7
     }).addTo(map);
 
-    // Après la déclaration de polyline, ajoutez :
-    const projectionLine = L.polyline([], {
-        color: '#1e88e5',
-        weight: 3,
-        opacity: 0.8,
-        dashArray: '5, 5'
-    }).addTo(map);
+
+// Ensuite, modifions la définition de la ligne
+const projectionLine = L.polyline([], {
+    color: '#1e88e5',
+    weight: 2,
+    opacity: 0.8,
+    dashArray: '7, 7',
+    className: 'animated-dash'  // Ajout de la classe pour l'animation
+}).addTo(map);
 
     updateInfo(`Zoom: ${map.getZoom()+1}<br>Position: ${initialPosition[0].toFixed(5)}, ${initialPosition[1].toFixed(5)}`);
 
@@ -386,67 +473,62 @@ const baseMaps = {
 
 // Fonction de mise à jour de la position principale
 async function updatePosition() {
-try {
-    const response = await fetch('/api/get_coordinates');
-    if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    const data = await response.json();
-
-    if (data.latitude && data.longitude) {
-        const newLatLng = new L.LatLng(data.latitude, data.longitude);
-
-        // Mise à jour du marqueur sans recentrer la carte
-        currentMarker.setLatLng(newLatLng);
-        polyline.addLatLng(newLatLng);
-
-        // Calcul de la projection
-        const speed = data.speed || 0;
-        const cog = data.cog || 0;
-
-        const distanceInNauticalMiles = speed * projectionHours;
-        const distanceInDegrees = nauticalMilesToDegrees(distanceInNauticalMiles);
-        const headingRad = (cog * Math.PI) / 180;
-        const endLat = data.latitude + distanceInDegrees * Math.cos(headingRad);
-        const endLon = data.longitude + distanceInDegrees * Math.sin(headingRad);
-
-        // Mise à jour de la ligne de projection
-        projectionLine.setLatLngs([
-            [data.latitude, data.longitude],
-            [endLat, endLon]
-        ]);
-
-        // Rotation de l'icône
-        const icon = currentMarker.getElement();
-        if (icon) {
-            const shipIcon = icon.querySelector('.ship-icon');
-            if (shipIcon) {
-                shipIcon.style.transform = `rotate(${cog}deg)`;
-            }
+    try {
+        const response = await fetch('/api/get_coordinates');
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
+        const data = await response.json();
 
-        // Mise à jour du popup sans l'ouvrir automatiquement
-        currentMarker.setPopupContent(`
-            <strong>HUAHINE</strong><br>
-            Position: ${data.latitude.toFixed(5)}, ${data.longitude.toFixed(5)}<br>
-            Cap: ${cog}°<br>
-            Vitesse: ${speed.toFixed(1)} nœuds<br>
-            Distance projetée: ${distanceInNauticalMiles.toFixed(1)} NM sur ${(projectionHours * 60).toFixed(0)} min
-        `);
+        if (data.latitude && data.longitude) {
+            const newLatLng = new L.LatLng(data.latitude, data.longitude);
 
-        // Mise à jour des informations sans affecter la vue de la carte
-        updateInfo(`
-            Zoom: ${map.getZoom()+1}<br>
-            Position: ${data.latitude.toFixed(5)}, ${data.longitude.toFixed(5)}<br>
-            Cap: ${cog}°<br>
-            Vitesse: ${speed.toFixed(1)} nœuds
-        `);
+            // Mise à jour du marker avec la nouvelle position et rotation
+            updateShipMarker([data.latitude, data.longitude], data.cog || 0);
+
+            polyline.addLatLng(newLatLng);
+
+            // Calcul de la projection
+            const speed = data.speed || 0;
+            const cog = data.cog || 0;
+
+            const distanceInNauticalMiles = speed * projectionHours;
+            const distanceInDegrees = nauticalMilesToDegrees(distanceInNauticalMiles);
+            const headingRad = (cog * Math.PI) / 180;
+            const endLat = data.latitude + distanceInDegrees * Math.cos(headingRad);
+            const endLon = data.longitude + distanceInDegrees * Math.sin(headingRad);
+
+            // Mise à jour de la ligne de projection
+            projectionLine.setLatLngs([
+                [data.latitude, data.longitude],
+                [endLat, endLon]
+            ]);
+
+            // Mise à jour du popup
+            if (shipMarker) {
+                shipMarker.bindPopup(`
+                    <strong>HUAHINE</strong><br>
+                    Position: ${data.latitude.toFixed(5)}, ${data.longitude.toFixed(5)}<br>
+                    Cap: ${cog}°<br>
+                    Vitesse: ${speed.toFixed(1)} nœuds<br>
+                    Distance projetée: ${distanceInNauticalMiles.toFixed(1)} NM sur ${(projectionHours * 60).toFixed(0)} min
+                `);
+            }
+
+            updateInfo(`
+                Zoom: ${map.getZoom()+1}<br>
+                Position: ${data.latitude.toFixed(5)}, ${data.longitude.toFixed(5)}<br>
+                Cap: ${cog}°<br>
+                Vitesse: ${speed.toFixed(1)} nœuds
+            `);
+        }
+    } catch (err) {
+        console.error("Erreur de mise à jour des coordonnées:", err);
     }
-} catch (err) {
-    console.error("Erreur de mise à jour des coordonnées:", err);
 }
-}
+
     // Intervalles de mise à jour
+    updatePosition();
     const updateInterval = setInterval(updatePosition, 3000);
     const aisUpdateInterval = setInterval(updateAISData, 10000);
 
@@ -466,10 +548,13 @@ try {
     };
 
     function centerOnBoat() {
-        const currentPosition = currentMarker.getLatLng();
-        const currentZoom = map.getZoom();  // Récupère le niveau de zoom actuel
-        map.setView(currentPosition, currentZoom);  // Utilise le zoom actuel au lieu d'une valeur fixe
-   }
+    if (shipMarker) {
+        const currentPosition = shipMarker.getLatLng();
+        const currentZoom = map.getZoom();
+        map.setView(currentPosition, currentZoom);
+    }
+}
+
 </script>
 </body>
 </html>
