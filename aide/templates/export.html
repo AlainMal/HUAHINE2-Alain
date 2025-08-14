@@ -18,7 +18,7 @@
                 <li>Choisissez ou créez un fichier .csv.</li>
                 <li>Cliquer sur 'Enregistrer'.</li>
             </ul>
-                      <li>Vous avez la possibilité de valider, ou de choisir les numéros des lignes à exporter.<br></li>
+        <li>Vous avez la possibilité de valider, ou de choisir les numéros des lignes à exporter.<br></li>
 
         <li>Vous avez à présent la possibilité de visualiser le fichier CSV en NMEA 2000.<br>
             <ul>
@@ -29,18 +29,19 @@
     </ol>
 
     <div class="tip">
-        <strong>Information :</strong> Vous verrez sur le fichier .csv les différentes valeurs des PGN sur chaques lignes.
+        <strong>Information :</strong> Vous verrez sur le fichier .csv les différentes valeurs des PGN sur chaques
+        lignes.
     </div>
 
-            <ul>
-                <li>Voyez un exemple du fichier .csv.</li>
-            </ul>
+    <ul>
+        <li>Voyez un exemple du fichier .csv.</li>
+    </ul>
 
 
     <div class="map-preview">
-    <img src="{{ url_for('static', filename='images/CSV.png') }}"
-         alt="Aperçu de la carte"
-         style="width: 100%;
+        <img src="{{ url_for('static', filename='images/CSV.png') }}"
+             alt="Aperçu de la carte"
+             style="width: 100%;
                 max-height: 600px;
                 object-fit: cover;
                 margin: 0 auto 20px auto;
@@ -50,7 +51,8 @@
     </div>
 
     <div class="error">
-        <strong>Erreur :</strong> Si vous avez des "PGN inconnu sur cette version", faire moi passer votre fichier .txt ou .csv., que j'essaierai de corriger.
+        <strong>Erreur :</strong> Si vous avez des "PGN inconnu sur cette version", faire moi passer votre fichier .txt
+        ou .csv., que j'essaierai de corriger.
     </div>
 
     <h3>Formats supportés</h3>
@@ -60,9 +62,9 @@
 </div>
 
 <script>
-// JavaScript spécifique à la page d'import si nécessaire
-document.addEventListener('DOMContentLoaded', function() {
-    // Votre code JavaScript ici
-});
+    // JavaScript spécifique à la page d'import si nécessaire
+    document.addEventListener('DOMContentLoaded', function() {
+        // Votre code JavaScript ici
+    });
 </script>
 {% endblock %}

@@ -22,26 +22,30 @@
 
         <li>Cochez la case à cocher "Enregister le bus CAN sur le fichier".</li>
         <li>Cliquez sur le bouton marqué "Open" dans la barre d'outils.</li>
-        <li>Cliquez sur le bouton de lecture <img  src="{{ url_for('static', filename='images/Talk.ico') }}" height="20"> dans la barre d'outils.</li>
-            <ul>
-                <li>Vous voyez le nombre de trames enregistrées sur l'écran</li>
-            </ul>
+        <li>Cliquez sur le bouton de lecture <img src="{{ url_for('static', filename='images/Talk.ico') }}" height="20">
+            dans la barre d'outils.
+        </li>
+        <ul>
+            <li>Vous voyez le nombre de trames enregistrées sur l'écran</li>
+        </ul>
         <li>Vous arrêtez quand vous voulez.<br></li>
         <li>Cliquez sur bouton en forme de livre sur la barre d'outils pour visualiser le fichier</li>
     </ol>
-<br>
+    <br>
     <div class="error">
-        <strong>Erreur :</strong> Si le bouton de lecture réapparait, c'est que vous n'avez pas de trame, vérifiez que vous êtes bien raccordé au bus NMEA 2000 et que celui-ci est bien alimenté et qu'il y a au moins un instrument de raccordé.
+        <strong>Erreur :</strong> Si le bouton de lecture réapparait, c'est que vous n'avez pas de trame, vérifiez que
+        vous êtes bien raccordé au bus NMEA 2000 et que celui-ci est bien alimenté et qu'il y a au moins un instrument
+        de raccordé.
     </div>
     <ul>
         <li>Voyez un exemple du fichier rempli.</li>
 
         <li>Vous voyez le TimeStamp en ms, l'ID, la longueur et les datas.<br></li>
     </ul>
-     <div class="map-preview">
-    <img src="{{ url_for('static', filename='images/fichier.png') }}"
-         alt="Fichier: fichier.png"
-         style="width: 50%;
+    <div class="map-preview">
+        <img src="{{ url_for('static', filename='images/fichier.png') }}"
+             alt="Fichier: fichier.png"
+             style="width: 50%;
                 max-height: 600px;
                 object-fit: cover;
                 margin: 0 auto 20px auto;
@@ -57,9 +61,9 @@
 </div>
 
 <script>
-// JavaScript spécifique à la page d'import si nécessaire
-document.addEventListener('DOMContentLoaded', function() {
-    // Votre code JavaScript ici
-});
+    // JavaScript spécifique à la page d'import si nécessaire
+    document.addEventListener('DOMContentLoaded', function() {
+        // Votre code JavaScript ici
+    });
 </script>
 {% endblock %}

@@ -24,7 +24,7 @@
         <li>Il faut, pour l'instant, installer le CANUSB.
             <ul>
                 <li>Récupérez le driver <a href="https://ftdichip.com/wp-content/uploads/2025/03/CDM2123620_Setup.zip">"D2XX"</a>. </li>
-                                                <li>Exécutez le CDM2123620_Setup.exe, situé dans le fichier importé.<br></li>
+                <li>Exécutez le CDM2123620_Setup.exe, situé dans le fichier importé.<br></li>
                 <li>Je vous recommande de récupérer la dll <a href="https://www.canusb.com/files/canusb_dll_driver.zip">"canusbdrv64.dll"</a> situé sur ce téléchargement.<br> </li>
                 Car il y a un problème sur 'canusb_Status' sur la "canusbdrv64.dll" fournit avec le setup du CANUSB;<br>
                 Donc, il faut copiez le fichier "canusbdrv64.dll" dans le répertoire :Windows/system32.
@@ -35,8 +35,8 @@
         <li>Branchement sur le bus NMEA 2000.
             <div class="map-preview">
                 <img src="{{ url_for('static', filename='images/cia102.gif') }}"
-                alt="Aperçu de la carte"
-                style="width: 50%;
+                     alt="Aperçu de la carte"
+                     style="width: 50%;
                 max-height: 600px;
                 object-fit: cover;
                 margin: 0 auto 20px auto;
@@ -46,8 +46,8 @@
             </div>
             <div class="map-preview">
                 <img src="{{ url_for('static', filename='images/canusb-con-diagram.png') }}"
-                alt="Aperçu de la carte"
-                style="width: 100%;
+                     alt="Aperçu de la carte"
+                     style="width: 100%;
                 max-height: 600px;
                 object-fit: cover;
                 margin: 0 auto 20px auto;
@@ -56,18 +56,18 @@
                 display: block;">
             </div>
         </li>
-            <ul>
-                <li>Vous n'avez qu'à brancher les bornes CAN_H et CAN_L sur les pins 4 et 5 du NMEA2000.</li><div class="tip">
-                <strong>Remarque :</strong> Si vous êtes branché à la place de la terminaison, il faut ajouter une resistance de 120 Ohms.
-    </div>
+        <ul>
+            <li>Vous n'avez qu'à brancher les bornes CAN_H et CAN_L sur les pins 4 et 5 du NMEA2000.</li><div class="tip">
+            <strong>Remarque :</strong> Si vous êtes branché à la place de la terminaison, il faut ajouter une resistance de 120 Ohms.
+        </div>
 
 
-            </ul>
+        </ul>
         <div class="map-preview">
             <ul>
                 <img src="{{ url_for('static', filename='images/PriseNMEA2000.png') }}"
-                alt="Aperçu de la carte"
-                style="width: 15%;
+                     alt="Aperçu de la carte"
+                     style="width: 15%;
                 max-height: 600px;
                 object-fit: cover;
                 margin: 0 auto 20px auto;
@@ -75,9 +75,9 @@
                 box-shadow: 0 2px 4px rgba(0,0,0,0.1);
                 display: block;">
                 <div class="map-preview">
-                <img src="{{ url_for('static', filename='images/BorneNMEA2000.png') }}"
-                alt="Aperçu de la carte"
-                style="width: 90%;
+                    <img src="{{ url_for('static', filename='images/BorneNMEA2000.png') }}"
+                         alt="Aperçu de la carte"
+                         style="width: 90%;
                 max-height: 600px;
                 object-fit: cover;
                 margin: 0 auto 20px auto;
@@ -86,12 +86,12 @@
                 display: block;">
                 </div>
             </ul>
-        <li>Maintenant, vous avez tout raccordé et mis vos drivers dans votre PC.
-            <ul>
-                <li>Mettez en route votre réseau NMEA 2000.</li>
-                <li>Utilisez l'application, HUAHINE.exe<br/></li>
-            </ul>
-        </li>
+            <li>Maintenant, vous avez tout raccordé et mis vos drivers dans votre PC.
+                <ul>
+                    <li>Mettez en route votre réseau NMEA 2000.</li>
+                    <li>Utilisez l'application, HUAHINE.exe<br/></li>
+                </ul>
+            </li>
 
     </ol>
 
@@ -101,7 +101,7 @@
 
     <h3>Exemple du programme pour utiliser les fonctions dll sur CANUSB</h3>
 
-        <pre><code class="python">
+    <pre><code class="python">
             import ctypes
 from ctypes import Structure, c_ubyte,c_long, c_int, POINTER, Array
 from Package.constante import *
@@ -212,9 +212,9 @@ class CANDll:
 </div>
 
 <script>
-// JavaScript spécifique à la page d'import si nécessaire
-document.addEventListener('DOMContentLoaded', function() {
-    // Votre code JavaScript ici
-});
+    // JavaScript spécifique à la page d'import si nécessaire
+    document.addEventListener('DOMContentLoaded', function() {
+        // Votre code JavaScript ici
+    });
 </script>
 {% endblock %}
