@@ -891,9 +891,6 @@ class NMEA2000:
             pass
 
         # Retoune le tuple qui ne comprend pas les analyses pour l'instant.
-        # return (self._pgn1, self._pgn2, self._pgn3, int(self._valeurChoisie1),
-        #         int(self._valeurChoisie2), int(self._valeurChoisie3), int(self._valeurChoisieTab), self._definition)
-
         return (
             self._pgn1,
             self._pgn2,
