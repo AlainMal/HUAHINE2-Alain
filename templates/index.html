@@ -222,7 +222,7 @@ const clearAllMarkers = () => {
 // Fonction pour mettre à jour le marker
 const updateShipMarker = (position, angle) => {
     // Nettoyer d'abord tous les markers
-    clearAllMarkers();
+    //clearAllMarkers();
 
     // Normalisation de l'angle
     let normalizedAngle = ((angle % 360) + 360) % 360;
@@ -247,6 +247,7 @@ const updateShipMarker = (position, angle) => {
         iconAnchor: [25, 25]
     });
 
+
     // Créer un nouveau marker
     shipMarker = L.marker(position, {
         icon: customIcon
@@ -261,7 +262,7 @@ const initializeShip = () => {
 
 // Attendre que la carte soit prête
 map.whenReady(() => {
-    clearAllMarkers(); // Nettoyer avant l'initialisation
+    //clearAllMarkers(); // Nettoyer avant l'initialisation
     initializeShip();
 });
 
@@ -509,6 +510,7 @@ async function updatePosition() {
 }
 
     // Intervalles de mise à jour
+    clearAllMarkers();
     updatePosition();
     const updateInterval = setInterval(updatePosition, 3000);
     const aisUpdateInterval = setInterval(updateAISData, 10000);
