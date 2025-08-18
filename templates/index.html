@@ -84,8 +84,8 @@
     border: none;
     }
     .ship-icon {
-        width: 50px;
-        height: 50px;
+        width: 30px;
+        height: 25px;
     }
     .ship-icon img {
         width: 100%;
@@ -218,8 +218,6 @@ const clearAllMarkers = () => {
 
 // Fonction pour mettre à jour le marker
 const updateShipMarker = (position, angle) => {
-    // Nettoyer d'abord tous les markers
-    //clearAllMarkers();
 
     // Normalisation de l'angle
     let normalizedAngle = ((angle % 360) + 360) % 360;
@@ -236,12 +234,12 @@ const updateShipMarker = (position, angle) => {
                  style="transform:
                         rotate(${adjustedAngle}deg)
                         scaleY(${shouldFlip ? -1 : 1});
-                        width: 50px; height: 50px;
+                        width: 30px; height: 30px;
                         transition: all 0.3s ease;">
         </div>`,
         className: 'custom-ship-icon',
-        iconSize: [50, 50],
-        iconAnchor: [25, 25]
+        iconSize: [30, 30],
+        iconAnchor: [15, 15]
     });
 
 
