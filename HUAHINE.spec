@@ -13,6 +13,7 @@ a = Analysis(
         ('templates/index.html', 'templates/'),
         ('aide/templates/*.html', 'templates/aide/'),
         ('static/icone/*.ico', 'static/icone/'),
+	('static/*.png', 'static/'),
         ('templates', 'templates')
      ],
     hiddenimports=[],
