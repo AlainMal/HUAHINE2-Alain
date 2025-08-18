@@ -20,7 +20,9 @@ rem Crée le dossier static dans dist
 mkdir dist\static
 
 rem Copie le fichier mbtiles
-copy static\cartes.mbtiles dist\static\
+copy static\cartes1.mbtiles dist\static\
+
+copy VoilierImage.ico dist\
 
 echo "Déploiement terminé !"
 pause
