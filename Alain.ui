@@ -653,7 +653,7 @@
   <action name="actionAbout">
    <property name="icon">
     <iconset>
-     <normaloff>icones/VoilierImage.png</normaloff>icones/VoilierImage.png</iconset>
+     <normaloff>VoilierImage.ico</normaloff>VoilierImage.ico</iconset>
    </property>
    <property name="text">
     <string>A propos</string>
@@ -680,7 +680,7 @@
   <action name="actionMap">
    <property name="icon">
     <iconset>
-     <normaloff>icones/VoilierImage.png</normaloff>icones/VoilierImage.png</iconset>
+     <normaloff>VoilierImage.ico</normaloff>VoilierImage.ico</iconset>
    </property>
    <property name="text">
     <string>Voir la carte</string>
