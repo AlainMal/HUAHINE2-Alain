@@ -847,7 +847,7 @@ coordinates: dict[str, float] = {
     "latitude": 43.243757,
     "longitude": 5.365660,
     "speed" : 6.0,
-    "cog" : 135.00
+    "cog" : 315.00
 }
 
 class CoordinatesManager:
@@ -899,7 +899,7 @@ DEFAULT_CONFIG = {
 
 @quart_app.route('/get_ships')
 async def get_ships():
-    # Récupération des vrais navires
+    # Récupération des navires MMSI
     raw_ships = window.nmea_2000.get_all_ais_ships()
 
     # Conversion au format attendu
