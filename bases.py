@@ -5,7 +5,7 @@ conn_planette = sqlite3.connect('D:/Alain/cartes1.mbtiles')
 cur_planette = conn_planette.cursor()
 
 # Attacher la base de données OpenSeaMap
-cur_planette.execute("ATTACH DATABASE 'E:/Alain/cartesN.mbtiles' AS seamap")
+cur_planette.execute("ATTACH DATABASE 'E:/Alain/cartesC.mbtiles' AS seamap")
 
 # Copie des tuiles de SeaMap (zoom 10-19) dans la base Navionic
 cur_planette.execute("""
