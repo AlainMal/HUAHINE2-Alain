@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <title>Cartes Navigation</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <link href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" rel="stylesheet"/>
+    <link href="{{ url_for('static', filename='favicon.ico') }}" rel="icon" type="image/x-icon">
     <style>
         html, body { height: 100%; margin: 0; }
         #map {
@@ -139,18 +140,23 @@
 
 <div class="legend">
     <label for="projectionTime">Temps de projection (minutes):</label>
-    <input type="number" id="projectionTime" min="0" max="1440" step="15" value="15">
+    <input id="projectionTime" max="1440" min="0" step="15" type="number" value="15">
     <button onclick="updateProjectionTime()">Appliquer</button>
     <div id="projectionInfo"></div>
 </div>
+
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
     const initialPosition = [43.2438, 5.3656];
     console.log('Position initiale:', initialPosition);
 
-    // Variable globale pour le temps de projection
-    let projectionHours = 0.25;
+// Au début du script, ajoutez :
+const positionHistory = [];
+
+
+// Variable globale pour le temps de projection
+let projectionHours = 0.25;
 
 const map = L.map('map', {
 center: initialPosition,
@@ -164,10 +170,10 @@ maxBoundsViscosity: 0  // Désactive la "viscosité" des limites
 }).setView(initialPosition, 13);
 
 
-    const info = document.getElementById('info');
-    function updateInfo(text) {
-        info.innerHTML = text;
-    }
+const info = document.getElementById('info');
+function updateInfo(text) {
+    info.innerHTML = text;
+}
 
 // Fonction pour mettre à jour le temps de projection
 function updateProjectionTime() {
@@ -306,21 +312,21 @@ const baseMaps = {
 "Carte Navionics": navionicsTileLayer
 };
 
-    L.control.layers(baseMaps, null, {collapsed: false}).addTo(map);
+L.control.layers(baseMaps, null, {collapsed: false}).addTo(map);
 
-    // Marqueur principal
-    const currentMarker = L.marker(initialPosition, {
-    icon: customIcon,
-    }).addTo(map)
-    .bindPopup("Salut tout le monde ! Je suis HUAHINE");
-    //.openPopup();
+// Marqueur principal
+const currentMarker = L.marker(initialPosition, {
+icon: customIcon,
+}).addTo(map)
+.bindPopup("Salut tout le monde ! Je suis HUAHINE");
+//.openPopup();
 
-    // Suivi de la position
-    const polyline = L.polyline([initialPosition], {
-        color: 'red',
-        weight: 3,
-        opacity: 0.7
-    }).addTo(map);
+// Suivi de la position
+const polyline = L.polyline([initialPosition], {
+    color: 'red',
+    weight: 3,
+    opacity: 0.7
+}).addTo(map);
 
 
 // Ensuite, modifions la définition de la ligne
@@ -332,120 +338,120 @@ const projectionLine = L.polyline([], {
     className: 'animated-dash'  // Ajout de la classe pour l'animation
 }).addTo(map);
 
-    updateInfo(`Zoom: ${map.getZoom()+1}<br>Position: ${initialPosition[0].toFixed(5)}, ${initialPosition[1].toFixed(5)}`);
+updateInfo(`Zoom: ${map.getZoom()+1}<br>Position: ${initialPosition[0].toFixed(5)}, ${initialPosition[1].toFixed(5)}`);
 
-    // Stockage des marqueurs AIS et des lignes de vitesse
-    const aisMarkers = {};
-    const speedLines = {};
+// Stockage des marqueurs AIS et des lignes de vitesse
+const aisMarkers = {};
+const speedLines = {};
 
-    // Fonction pour convertir les milles nautiques en degrés
-    function nauticalMilesToDegrees(nauticalMiles) {
-        return nauticalMiles / 60;
-    }
+// Fonction pour convertir les milles nautiques en degrés
+function nauticalMilesToDegrees(nauticalMiles) {
+    return nauticalMiles / 60;
+}
 
-    // Fonction pour mettre à jour ou créer un marqueur AIS
-    function updateAISMarker(ship) {
-        console.log("Mise à jour/création du marqueur pour MMSI:", ship.mmsi);
-        const shipColor = ship.class === 'A' ? '#FF0000' : '#00FF00';  // Rouge pour classe A, Vert pour classe B
+// Fonction pour mettre à jour ou créer un marqueur AIS
+function updateAISMarker(ship) {
+    console.log("Mise à jour/création du marqueur pour MMSI:", ship.mmsi);
+    const shipColor = ship.class === 'A' ? '#FF0000' : '#00FF00';  // Rouge pour classe A, Vert pour classe B
 
-        // Créer un icône rotatif basé sur le cap du navire
-        const rotatedShipIcon = L.divIcon({
-            html: `<div class="ship-icon" style="transform: rotate(${ship.cog}deg);">
-                <svg viewBox="0 0 100 100" style="width: 24px; height: 24px;">
-                    <path fill="${shipColor}" stroke="white" stroke-width="2"
-                        d="M50,10 L80,80 L50,65 L20,80 Z"/>
-                </svg>
-            </div>`,
-            className: 'ship-marker',
-            iconSize: [12, 12],
-            iconAnchor: [6, 6]
-        });
+    // Créer un icône rotatif basé sur le cap du navire
+    const rotatedShipIcon = L.divIcon({
+        html: `<div class="ship-icon" style="transform: rotate(${ship.cog}deg);">
+            <svg viewBox="0 0 100 100" style="width: 24px; height: 24px;">
+                <path fill="${shipColor}" stroke="white" stroke-width="2"
+                    d="M50,10 L80,80 L50,65 L20,80 Z"/>
+            </svg>
+        </div>`,
+        className: 'ship-marker',
+        iconSize: [12, 12],
+        iconAnchor: [6, 6]
+    });
 
-        // Calculer la distance parcourue
-        const speed = ship.sog || 0; // vitesse en nœuds
-        const distanceInNauticalMiles = speed * projectionHours;
-        const distanceInDegrees = nauticalMilesToDegrees(distanceInNauticalMiles);
+    // Calculer la distance parcourue
+    const speed = ship.sog || 0; // vitesse en nœuds
+    const distanceInNauticalMiles = speed * projectionHours;
+    const distanceInDegrees = nauticalMilesToDegrees(distanceInNauticalMiles);
 
-        // Calculer le point final de la ligne de vitesse
-        const headingRad = (ship.cog * Math.PI) / 180;
+    // Calculer le point final de la ligne de vitesse
+    const headingRad = (ship.cog * Math.PI) / 180;
 
-        // Calculer les coordonnées du point final
-        const endLat = ship.latitude + distanceInDegrees * Math.cos(headingRad);
-        const endLon = ship.longitude + distanceInDegrees * Math.sin(headingRad);
+    // Calculer les coordonnées du point final
+    const endLat = ship.latitude + distanceInDegrees * Math.cos(headingRad);
+    const endLon = ship.longitude + distanceInDegrees * Math.sin(headingRad);
 
-        // Mettre à jour ou créer la ligne de vitesse
-        if (speedLines[ship.mmsi]) {
-            speedLines[ship.mmsi].setLatLngs([
-                [ship.latitude, ship.longitude],
-                [endLat, endLon]
-            ]);
-        } else {
-            speedLines[ship.mmsi] = L.polyline(
-                [[ship.latitude, ship.longitude], [endLat, endLon]],
-                {
-                    color: '#1e88e5',
-                    weight: 2,
-                    opacity: 0.8,
-                    dashArray: '5, 5'
-                }
-            ).addTo(map);
-        }
-
-        // Contenu de la popup avec les informations de projection
-        const popupContent = `
-            <strong>${ship.name || 'Navire inconnu'}</strong><br>
-            <strong>Navire AIS Classe ${ship.class}</strong><br>
-            MMSI: ${ship.mmsi}<br>
-            Position: ${ship.latitude.toFixed(5)}, ${ship.longitude.toFixed(5)}<br>
-            Cap: ${ship.cog}°<br>
-            Vitesse: ${ship.sog ? ship.sog.toFixed(1) : 'N/A'} nœuds<br>
-            Distance projetée: ${distanceInNauticalMiles.toFixed(1)} NM sur ${(projectionHours * 60).toFixed(0)} min
-        `;
-
-        if (aisMarkers[ship.mmsi]) {
-            // Mise à jour d'un marqueur existant
-            aisMarkers[ship.mmsi].setLatLng([ship.latitude, ship.longitude]);
-            aisMarkers[ship.mmsi].setIcon(rotatedShipIcon);
-            aisMarkers[ship.mmsi].getPopup().setContent(popupContent);
-        } else {
-            // Création d'un nouveau marqueur
-            aisMarkers[ship.mmsi] = L.marker([ship.latitude, ship.longitude], {
-                icon: rotatedShipIcon
-            }).addTo(map);
-            aisMarkers[ship.mmsi].bindPopup(popupContent);
-        }
-    }
-
-    // Fonction de mise à jour des données AIS
-    async function updateAISData() {
-        try {
-            console.log("Récupération des données AIS...");
-            const response = await fetch('/get_ships');
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+    // Mettre à jour ou créer la ligne de vitesse
+    if (speedLines[ship.mmsi]) {
+        speedLines[ship.mmsi].setLatLngs([
+            [ship.latitude, ship.longitude],
+            [endLat, endLon]
+        ]);
+    } else {
+        speedLines[ship.mmsi] = L.polyline(
+            [[ship.latitude, ship.longitude], [endLat, endLon]],
+            {
+                color: '#1e88e5',
+                weight: 2,
+                opacity: 0.8,
+                dashArray: '5, 5'
             }
-            const ships = await response.json();
-            console.log("Données AIS reçues:", ships);
-
-            // Mettre à jour chaque navire
-            ships.forEach(ship => updateAISMarker(ship));
-
-            // Supprimer les marqueurs des navires qui ne sont plus présents
-            Object.keys(aisMarkers).forEach(mmsi => {
-                if (!ships.find(ship => ship.mmsi === mmsi)) {
-                    console.log("Suppression du navire:", mmsi);
-                    map.removeLayer(aisMarkers[mmsi]);
-                    if (speedLines[mmsi]) {
-                        map.removeLayer(speedLines[mmsi]);
-                        delete speedLines[mmsi];
-                    }
-                    delete aisMarkers[mmsi];
-                }
-            });
-        } catch (err) {
-            console.error("Erreur lors de la mise à jour des données AIS:", err);
-        }
+        ).addTo(map);
     }
+
+    // Contenu de la popup avec les informations de projection
+    const popupContent = `
+        <strong>${ship.name || 'Navire inconnu'}</strong><br>
+        <strong>Navire AIS Classe ${ship.class}</strong><br>
+        MMSI: ${ship.mmsi}<br>
+        Position: ${ship.latitude.toFixed(5)}, ${ship.longitude.toFixed(5)}<br>
+        Cap: ${ship.cog}°<br>
+        Vitesse: ${ship.sog ? ship.sog.toFixed(1) : 'N/A'} nœuds<br>
+        Distance projetée: ${distanceInNauticalMiles.toFixed(1)} NM sur ${(projectionHours * 60).toFixed(0)} min
+    `;
+
+    if (aisMarkers[ship.mmsi]) {
+        // Mise à jour d'un marqueur existant
+        aisMarkers[ship.mmsi].setLatLng([ship.latitude, ship.longitude]);
+        aisMarkers[ship.mmsi].setIcon(rotatedShipIcon);
+        aisMarkers[ship.mmsi].getPopup().setContent(popupContent);
+    } else {
+        // Création d'un nouveau marqueur
+        aisMarkers[ship.mmsi] = L.marker([ship.latitude, ship.longitude], {
+            icon: rotatedShipIcon
+        }).addTo(map);
+        aisMarkers[ship.mmsi].bindPopup(popupContent);
+    }
+}
+
+// Fonction de mise à jour des données AIS
+async function updateAISData() {
+    try {
+        console.log("Récupération des données AIS...");
+        const response = await fetch('/get_ships');
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const ships = await response.json();
+        console.log("Données AIS reçues:", ships);
+
+        // Mettre à jour chaque navire
+        ships.forEach(ship => updateAISMarker(ship));
+
+        // Supprimer les marqueurs des navires qui ne sont plus présents
+        Object.keys(aisMarkers).forEach(mmsi => {
+            if (!ships.find(ship => ship.mmsi === mmsi)) {
+                console.log("Suppression du navire:", mmsi);
+                map.removeLayer(aisMarkers[mmsi]);
+                if (speedLines[mmsi]) {
+                    map.removeLayer(speedLines[mmsi]);
+                    delete speedLines[mmsi];
+                }
+                delete aisMarkers[mmsi];
+            }
+        });
+    } catch (err) {
+        console.error("Erreur lors de la mise à jour des données AIS:", err);
+    }
+}
 
 
 // Fonction de mise à jour de la position principale
@@ -460,44 +466,81 @@ async function updatePosition() {
         if (data.latitude && data.longitude) {
             const newLatLng = new L.LatLng(data.latitude, data.longitude);
 
-            // Mise à jour du marker avec la nouvelle position et rotation
-            updateShipMarker([data.latitude, data.longitude], data.cog || 0);
+            // Sauvegarde de l'historique
+            positionHistory.push({
+                latitude: data.latitude,
+                longitude: data.longitude,
+                cog: data.cog || 0,
+                speed: data.speed || 0,
+                timestamp: new Date().toISOString()
+            });
 
-            polyline.addLatLng(newLatLng);
+        // Limiter l'historique à 1000 points par exemple
+        if (positionHistory.length > 1000) {
+            positionHistory.shift();
+        }
 
-            // Calcul de la projection
-            const speed = data.speed || 0;
-            const cog = data.cog || 0;
+        // Toutes les 3 secondes :
+        const lastPoint = positionHistory[positionHistory.length - 1];
 
-            const distanceInNauticalMiles = speed * projectionHours;
-            const distanceInDegrees = nauticalMilesToDegrees(distanceInNauticalMiles);
-            const headingRad = (cog * Math.PI) / 180;
-            const endLat = data.latitude + distanceInDegrees * Math.cos(headingRad);
-            const endLon = data.longitude + distanceInDegrees * Math.sin(headingRad);
+        // Création de la ligne entre les points
+        polyline.addLatLng([lastPoint.latitude, lastPoint.longitude]);
 
-            // Mise à jour de la ligne de projection
-            projectionLine.setLatLngs([
-                [data.latitude, data.longitude],
-                [endLat, endLon]
-            ]);
+        // Création du point
+        L.circleMarker([lastPoint.latitude, lastPoint.longitude], {
+            radius: 3,
+            fillColor: '#ff4444',
+            color: '#000',
+            weight: 1,
+            opacity: 0.8,
+            fillOpacity: 0.6
+        }).addTo(map).bindPopup(`
+            <strong>Position historique</strong><br>
+            Heure: ${new Date(lastPoint.timestamp).toLocaleTimeString()}<br>
+            Position: ${lastPoint.latitude.toFixed(5)}, ${lastPoint.longitude.toFixed(5)}<br>
+            Cap: ${lastPoint.cog}°<br>
+            Vitesse: ${lastPoint.speed.toFixed(1)} nœuds
+        `);
 
-            // Mise à jour du popup
-            if (shipMarker) {
-                shipMarker.bindPopup(`
-                    <strong>HUAHINE</strong><br>
-                    Position: ${data.latitude.toFixed(5)}, ${data.longitude.toFixed(5)}<br>
-                    Cap: ${cog}°<br>
-                    Vitesse: ${speed.toFixed(1)} nœuds<br>
-                    Distance projetée: ${distanceInNauticalMiles.toFixed(1)} NM sur ${(projectionHours * 60).toFixed(0)} min
-                `);
-            }
 
-            updateInfo(`
-                Zoom: ${map.getZoom()+1}<br>
+        // Mise à jour du marker avec la nouvelle position et rotation
+        updateShipMarker([data.latitude, data.longitude], data.cog || 0);
+
+        polyline.addLatLng(newLatLng);
+
+        // Calcul de la projection
+        const speed = data.speed || 0;
+        const cog = data.cog || 0;
+
+        const distanceInNauticalMiles = speed * projectionHours;
+        const distanceInDegrees = nauticalMilesToDegrees(distanceInNauticalMiles);
+        const headingRad = (cog * Math.PI) / 180;
+        const endLat = data.latitude + distanceInDegrees * Math.cos(headingRad);
+        const endLon = data.longitude + distanceInDegrees * Math.sin(headingRad);
+
+        // Mise à jour de la ligne de projection
+        projectionLine.setLatLngs([
+            [data.latitude, data.longitude],
+            [endLat, endLon]
+        ]);
+
+        // Mise à jour du popup
+        if (shipMarker) {
+            shipMarker.bindPopup(`
+                <strong>HUAHINE</strong><br>
                 Position: ${data.latitude.toFixed(5)}, ${data.longitude.toFixed(5)}<br>
                 Cap: ${cog}°<br>
-                Vitesse: ${speed.toFixed(1)} nœuds
+                Vitesse: ${speed.toFixed(1)} nœuds<br>
+                Distance projetée: ${distanceInNauticalMiles.toFixed(1)} NM sur ${(projectionHours * 60).toFixed(0)} min
             `);
+        }
+
+        updateInfo(`
+            Zoom: ${map.getZoom()}<br>
+            Position: ${data.latitude.toFixed(5)}, ${data.longitude.toFixed(5)}<br>
+            Cap: ${cog}°<br>
+            Vitesse: ${speed.toFixed(1)} nœuds
+        `);
         }
     } catch (err) {
         console.error("Erreur de mise à jour des coordonnées:", err);
@@ -516,7 +559,7 @@ async function updatePosition() {
     // Événements de la carte
     map.on('moveend zoomend', () => {
         const center = map.getCenter();
-        updateInfo(`Zoom: ${map.getZoom()+1}<br>Position: ${center.lat.toFixed(5)}, ${center.lng.toFixed(5)}`);
+        updateInfo(`Zoom: ${map.getZoom()}<br>Position: ${center.lat.toFixed(5)}, ${center.lng.toFixed(5)}`);
     });
 
     // Nettoyage à la fermeture

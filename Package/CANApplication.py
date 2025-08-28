@@ -1,6 +1,5 @@
 import asyncio
 import os
-import ctypes
 
 from PyQt5 import uic
 from PyQt5.QtCore import Qt
@@ -9,7 +8,97 @@ from PyQt5.QtGui import QIcon
 
 from Package.constante import *
 from Package.CAN_dll import CANDll
+import platform
+import subprocess
+from typing import Optional
 
+
+class SleepPreventer:
+    def __init__(self):
+        self.os_type = platform.system()
+        self.process: Optional[subprocess.Popen] = None
+
+        # Pour Windows
+        if self.os_type == 'Windows':
+            self.ES_CONTINUOUS = 0x80000000
+            self.ES_SYSTEM_REQUIRED = 0x00000001
+            self.ES_DISPLAY_REQUIRED = 0x00000002
+
+    def prevent_sleep(self) -> bool:
+        """Empêche la mise en veille du système."""
+        try:
+            if self.os_type == 'Windows':
+                import ctypes
+                ctypes.windll.kernel32.SetThreadExecutionState(
+                    self.ES_CONTINUOUS | self.ES_SYSTEM_REQUIRED | self.ES_DISPLAY_REQUIRED
+                )
+                return True
+
+            elif self.os_type == 'Darwin':  # macOS
+                self.process = subprocess.Popen(['caffeinate', '-di'])
+                return True
+
+            elif self.os_type == 'Linux':
+                try:
+                    # Utiliser xdg-screensaver directement
+                    window_id = subprocess.check_output(
+                        ['xdotool', 'getactivewindow']).decode().strip()
+                    self.process = subprocess.Popen(
+                        ['xdg-screensaver', 'suspend', window_id])
+                    return True
+                except Exception as e:
+                    print(f"Erreur avec xdg-screensaver : {e}")
+                    # Alternative avec systemd-inhibit si disponible
+                    try:
+                        self.process = subprocess.Popen([
+                            'systemd-inhibit',
+                            '--what=sleep:idle',
+                            '--who=MyApp',
+                            '--why=Reading CAN bus',
+                            'sleep', 'infinity'
+                        ])
+                        return True
+                    except Exception as e2:
+                        print(f"Erreur avec systemd-inhibit : {e2}")
+                        return False
+            return False
+
+        except Exception as e:
+            print(f"Erreur lors de l'inhibition de la mise en veille : {e}")
+            return False
+
+    def allow_sleep(self) -> bool:
+        """Réactive la mise en veille du système."""
+        try:
+            if self.os_type == 'Windows':
+                import ctypes
+                ctypes.windll.kernel32.SetThreadExecutionState(self.ES_CONTINUOUS)
+                return True
+
+            elif self.os_type == 'Darwin' or self.os_type == 'Linux':
+                if self.process:
+                    self.process.terminate()
+                    self.process = None
+
+                    # Pour Linux, réactiver l'écran de veille si nécessaire
+                    if self.os_type == 'Linux':
+                        try:
+                            window_id = subprocess.check_output(
+                                ['xdotool', 'getactivewindow']).decode().strip()
+                            subprocess.run(['xdg-screensaver', 'resume', window_id])
+                        except (subprocess.SubprocessError, FileNotFoundError) as e:
+                            print(f"Erreur lors de la réactivation de l'écran de veille : {e}")
+                return True
+
+            return False
+
+        except Exception as e:
+            print(f"Erreur lors de la réactivation de la mise en veille : {e}")
+            return False
+
+    def __del__(self):
+        """Destructeur pour s'assurer que tout est bien nettoyé."""
+        self.allow_sleep()
 # ****************************************** CLASSE POUR LA LECTURE DU BUS CAN *****************************************
 class CANApplication(QMainWindow):
     # Tous les paramètres sont défini dans la classe MainWindow sur HUAHINE.py
@@ -64,7 +153,9 @@ class CANApplication(QMainWindow):
         if self.actions.get("actionStatus"):
             self.actions["actionStatus"].triggered.connect(self.on_click_status)
 
-# ====================================== Débuts des méthodes CANApplication ============================================
+        self.sleep_preventer = SleepPreventer()
+
+    # ====================================== Débuts des méthodes CANApplication ============================================
     # Méthode pour lire le bus CAN -------------------------------------------------------------------------------------
     async def read(self):
         print("On est entré dans la boucle de lecture.")
@@ -78,9 +169,8 @@ class CANApplication(QMainWindow):
                                   stop_enabled=True)
 
         # Interdit de se mettre en veille
-        ctypes.windll.kernel32.SetThreadExecutionState(
-            ES_CONTINUOUS | ES_SYSTEM_REQUIRED | ES_DISPLAY_REQUIRED
-        )
+        self.sleep_preventer.prevent_sleep()
+
 
         self._stop_flag = False
         self._encours = False
@@ -122,9 +212,8 @@ class CANApplication(QMainWindow):
         print("Tâche read() terminée.")
 
         # Réautorise la mise en veille du PC.
-        ctypes.windll.kernel32.SetThreadExecutionState(
-            ES_CONTINUOUS
-        )
+        self.sleep_preventer.allow_sleep()
+
 
     # Méthode pour lancer le Read de manière asynchrone ----------------------------------------------------------------
     async def main(self):

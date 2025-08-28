@@ -42,13 +42,13 @@ class TempsReel:
             #                             NMEA 2000
             #                       Affichage des jauges
             #                       Affichage des MMSI
-            #                       Affichage de la carte
+            #                       Affichage des positions la carte
             # *********************************************************************************
 
             # On appelle la routine "octets" si la case à cocher est validée pour NMEA 2000 en temps réel.
             if coche_nmea:
                 # Fournit le résultat de ma position, pour l'afficher sur la carte en temps réel.
                 pgn =  main_window.nmea_2000.pgn( msg.ID)
-                main_window.nmea_2000.octets(pgn, msg.data) # Ce qui est fait dans "octets".
                 # On profite du temps réel pour afficher les bateaux MMSI dans octets() sur NMEA 2000.
+                main_window.nmea_2000.octets(pgn, msg.data) # Ce qui est fait dans "octets".
             # =================================================================================
