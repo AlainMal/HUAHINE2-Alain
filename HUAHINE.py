@@ -103,8 +103,6 @@ class TableModel(QAbstractTableModel):
         return None
 # ************************************ FIN DE LA CLASSE TableModel *****************************************************
 
-
-# ***************************************** FENETRE PRINCIAPALE ********************************************************
 # Méthode asynchrone pour nettoyer les tâches --------------------------------------------------------------------------
 async def cleanup():
     print("Nettoyage des tâches en cours...")
@@ -120,7 +118,7 @@ async def cleanup():
 
     print("Nettoyage terminé")
 
-
+# ***************************************** FENETRE PRINCIAPALE ********************************************************
 class MainWindow(QMainWindow):
     def __init__(self):
         super(MainWindow,self).__init__() # Lance la fenêtre
@@ -784,7 +782,7 @@ class MainWindow(QMainWindow):
 
             # Affiche la boîte de dialogue
             about_box.exec_()
-# ======================================= FIN DES METHODES =============================================================
+# =============================================== FIN DES METHODES =====================================================
 
 # ================================================= DEBUT DU QUART =====================================================
 # Dans class MainWindow(QMainWindow)
@@ -842,6 +840,7 @@ class MainWindow(QMainWindow):
             QMessageBox.critical(self, "Erreur", f"Une erreur est survenue: {str(error)}")
 
 
+# ******************************************* CLASSE CoordinatesManager ************************************************
 # Au niveau global de votre fichier, définissez coordinates comme ceci :
 coordinates: dict[str, float] = {
     "latitude": 43.243757,
@@ -878,7 +877,9 @@ class CoordinatesManager:
         except Exception as error:
             print(f"Erreur inattendue : {error}")
             raise
+# *************************************** FIN DE CLASSE CoordinatesManager *********************************************
 
+# ========================================== APPLICATION "QUART" =======================================================
 # Application Quart
 quart_app = Quart(__name__,
                   static_folder='static',
@@ -1036,7 +1037,9 @@ async def get_coordinates():
     except Exception as error:
         print(f"Erreur lors de la récupération des coordonnées : {error}")
         return jsonify({"error": str(error)}), 500
-# ===================================== FIN DE QUART ====================================================================
+# =============================================== FIN DE QUART =========================================================
+
+# ********************************************* LANCE L'APPLICATION ****************************************************
 if __name__ == "__main__":
     print(f"SQLite Version: {sqlite3.sqlite_version}")
     print("=== Serveur de tuiles MBTiles ===")
@@ -1075,3 +1078,4 @@ if __name__ == "__main__":
         print(f"Erreur principale: {e}")
         QMessageBox.critical(None, "Erreur", f"Une erreur s'est produite: {str(e)}")
         sys.exit(1)
+#  ****************************************** FIN DE L'APPLICATION *****************************************************'
