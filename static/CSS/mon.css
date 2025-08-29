@@ -121,3 +121,32 @@
 .animated-dash {
     animation: dashmove 1s linear infinite;
 }
+
+.history-controls {
+    position: absolute;
+    top: 150px;  /* Position sous les autres contrôles */
+    right: 10px;
+    z-index: 1000;
+    background: white;
+    padding: 10px;
+    border-radius: 4px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    font-family: Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.history-controls button {
+    padding: 4px 8px;
+    background: #1e88e5;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    width: 100%;
+}
+
+.history-controls button:hover {
+    background: #1976d2;
+}

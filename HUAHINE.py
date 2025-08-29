@@ -14,7 +14,7 @@ from PyQt5.QtWidgets import QMainWindow, QAbstractItemView
 from PyQt5.QtCore import Qt, QAbstractTableModel, QModelIndex, pyqtSlot
 from PyQt5.QtGui import QIcon
 from PyQt5.uic import loadUi
-from quart import Quart, render_template, jsonify, Response
+from quart import Quart, render_template, Response, jsonify, request
 
 
 # Import des packages personnalisés
@@ -1037,6 +1037,50 @@ async def get_coordinates():
     except Exception as error:
         print(f"Erreur lors de la récupération des coordonnées : {error}")
         return jsonify({"error": str(error)}), 500
+
+
+# Dans HUAHINE.py - Ajoutez ces routes
+import os
+import json
+
+# Définir le chemin du fichier d'historique
+HISTORY_FILE = os.path.join('static', 'boat_history.json')
+
+
+@quart_app.route('/save_history', methods=['POST'])
+async def save_history():
+    try:
+        # Créer le dossier static s'il n'existe pas
+        os.makedirs('static', exist_ok=True)
+
+        # Récupérer les données JSON de la requête
+        history_data = await request.get_json()
+
+        # Sauvegarder dans le fichier
+        with open(HISTORY_FILE, 'w') as f:
+            json.dump(history_data, f)
+
+        return jsonify({"status": "success", "message": "Historique sauvegardé"})
+    except Exception as e:
+        print(f"Erreur lors de la sauvegarde: {str(e)}")
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+
+@quart_app.route('/load_history')
+async def load_history():
+    try:
+        # Vérifier si le fichier existe
+        if not os.path.exists(HISTORY_FILE):
+            return jsonify([])
+
+        # Charger les données du fichier
+        with open(HISTORY_FILE, 'r') as f:
+            history_data = json.load(f)
+
+        return jsonify(history_data)
+    except Exception as e:
+        print(f"Erreur lors du chargement: {str(e)}")
+        return jsonify({"status": "error", "message": str(e)}), 500
 # =============================================== FIN DE QUART =========================================================
 
 # ********************************************* LANCE L'APPLICATION ****************************************************

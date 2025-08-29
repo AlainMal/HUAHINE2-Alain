@@ -20,6 +20,12 @@
     <div id="projectionInfo"></div>
 </div>
 
+<div class="legend" style="bottom: 120px;">
+    <button onclick="saveHistory()">Sauvegarder l'historique</button>
+    <button onclick="loadHistory()">Charger l'historique</button>
+</div>
+
+
 <script src="{{ url_for('static', filename='js/leaflet.js') }}"></script>
 <script src="{{ url_for('static', filename='js/mon.js') }}"></script>
 

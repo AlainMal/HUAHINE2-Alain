@@ -50,14 +50,6 @@ document.getElementById('projectionInfo').innerHTML =
     `Projection sur ${(projectionHours * 60).toFixed(0)} minutes`;
 });
 
-// Icône personnalisée pour votre bateau principal
-const customIcon = L.divIcon({
-    html: `<div class="ship-icon">
-
-    </div>`,
-    className: ''
-});
-
 
 // Variable globale pour le marker
 let shipMarker = null;
@@ -72,19 +64,10 @@ const clearAllMarkers = () => {
     shipMarker = null;
 };
 
-// Fonction pour mettre à jour le marker
-const updateShipMarker = (position, angle) => {
-
-    // Normalisation de l'angle
-    let normalizedAngle = ((angle % 360) + 360) % 360;
-
-    // Détermine si l'image doit être inversée (quand l'angle est entre 0 et 180)
-    const shouldFlip = normalizedAngle > 0 && normalizedAngle < 180;
-
-    // Ajustement de l'angle pour l'orientation correcte de l'image
-    const adjustedAngle = normalizedAngle - 270;
-
-    const customIcon = L.divIcon({
+// Fonction pour créer l'icône personnalisée
+function createCustomIcon(angle = 0, shouldFlip = false) {
+    const adjustedAngle = angle - 270;
+    return L.divIcon({
         html: `<div class="ship-icon" id="unique-ship-icon">
             <img src="/static/VoilierImage.png"
                  style="transform:
@@ -97,11 +80,26 @@ const updateShipMarker = (position, angle) => {
         iconSize: [30, 30],
         iconAnchor: [15, 15]
     });
+}
 
+// Fonction pour mettre à jour le marker
+const updateShipMarker = (position, angle) => {
+    // Normalisation de l'angle
+    let normalizedAngle = ((angle % 360) + 360) % 360;
+
+    // Détermine si l'image doit être inversée (quand l'angle est entre 0 et 180)
+    const shouldFlip = normalizedAngle > 0 && normalizedAngle < 180;
+
+    // Ajustement de l'angle pour l'orientation correcte de l'image
+    const adjustedAngle = normalizedAngle - 270;
+
+    if (shipMarker) {
+        map.removeLayer(shipMarker);
+    }
 
     // Créer un nouveau marker
     shipMarker = L.marker(position, {
-        icon: customIcon
+        icon: createCustomIcon(angle, shouldFlip),
     }).addTo(map);
 };
 
@@ -116,7 +114,6 @@ map.whenReady(() => {
     //clearAllMarkers(); // Nettoyer avant l'initialisation
     initializeShip();
 });
-
 
 // Couche MBTiles
 // Définition des différentes couches MBTiles
@@ -166,7 +163,7 @@ L.control.layers(baseMaps, null, {collapsed: false}).addTo(map);
 
 // Marqueur principal
 const currentMarker = L.marker(initialPosition, {
-icon: customIcon,
+icon: createCustomIcon(0),
 }).addTo(map)
 .bindPopup("Salut tout le monde ! Je suis HUAHINE");
 //.openPopup();
@@ -325,8 +322,8 @@ async function updatePosition() {
                 timestamp: new Date().toISOString()
             });
 
-        // Limiter l'historique à 1000 points par exemple
-        if (positionHistory.length > 1000) {
+        // Limiter l'historique à 14 400 points par exemple (4h)
+        if (positionHistory.length > 14400) {
             positionHistory.shift();
         }
 
@@ -351,7 +348,6 @@ async function updatePosition() {
             Cap: ${lastPoint.cog}°<br>
             Vitesse: ${lastPoint.speed.toFixed(1)} nœuds
         `);
-
 
         // Mise à jour du marker avec la nouvelle position et rotation
         updateShipMarker([data.latitude, data.longitude], data.cog || 0);
@@ -397,31 +393,105 @@ async function updatePosition() {
     }
 }
 
-    // Intervalles de mise à jour
-    clearAllMarkers();
-    updatePosition();
-    const updateInterval = setInterval(updatePosition, 3000);
-    const aisUpdateInterval = setInterval(updateAISData, 10000);
-
-    // Premier appel immédiat pour les données AIS
-    updateAISData();
-
-    // Événements de la carte
-    map.on('moveend zoomend', () => {
-        const center = map.getCenter();
-        updateInfo(`Zoom: ${map.getZoom()}<br>Position: ${center.lat.toFixed(5)}, ${center.lng.toFixed(5)}`);
-    });
-
-    // Nettoyage à la fermeture
-    window.onbeforeunload = function() {
-        clearInterval(updateInterval);
-        clearInterval(aisUpdateInterval);
-    };
-
-    function centerOnBoat() {
-    if (shipMarker) {
-        const currentPosition = shipMarker.getLatLng();
-        const currentZoom = map.getZoom();
-        map.setView(currentPosition, currentZoom);
+// Fonction pour sauvegarder l'historique
+function saveHistory() {
+    if (positionHistory.length === 0) {
+        alert("Pas d'historique à sauvegarder");
+        return;
     }
+
+    const historyData = JSON.stringify(positionHistory);
+    fetch('/save_history', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: historyData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status ==+ "success") {
+            alert("Historique sauvegardé avec succès");
+        } else {
+            alert("Erreur lors de la sauvegarde: " + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Erreur de sauvegarde:', error);
+        alert("Erreur lors de la sauvegarde");
+    });
+}
+
+// Fonction pour charger l'historique
+function loadHistory() {
+    fetch('/load_history')
+    .then(response => response.json())
+    .then(data => {
+        if (Array.isArray(data) && data.length > 0) {
+            positionHistory = data;
+            // Nettoyer la carte avant d'ajouter les nouveaux points
+            map.eachLayer((layer) => {
+                if (layer instanceof L.CircleMarker) {
+                    map.removeLayer(layer);
+                }
+            });
+            polyline.setLatLngs([]);
+
+            // Dessiner tous les points de l'historique
+            data.forEach(point => {
+                L.circleMarker([point.latitude, point.longitude], {
+                    radius: 3,
+                    fillColor: '#ff4444',
+                    color: '#000',
+                    weight: 1,
+                    opacity: 0.8,
+                    fillOpacity: 0.6
+                }).addTo(map).bindPopup(`
+                    <strong>Position historique</strong><br>
+                    Heure: ${new Date(point.timestamp).toLocaleTimeString()}<br>
+                    Position: ${point.latitude.toFixed(5)}, ${point.longitude.toFixed(5)}<br>
+                    Cap: ${point.cog}°<br>
+                    Vitesse: ${point.speed.toFixed(1)} nœuds
+                `);
+
+                // Mettre à jour la ligne de trace
+                polyline.addLatLng([point.latitude, point.longitude]);
+            });
+            alert("Historique chargé avec succès");
+        } else {
+            alert("Aucun historique trouvé");
+        }
+    })
+    .catch(error => {
+        console.error('Erreur de chargement:', error);
+        alert("Erreur lors du chargement de l'historique");
+    });
+}
+
+// Intervalles de mise à jour
+clearAllMarkers();
+updatePosition();
+const updateInterval = setInterval(updatePosition, 3000);
+const aisUpdateInterval = setInterval(updateAISData, 10000);
+
+// Premier appel immédiat pour les données AIS
+updateAISData();
+
+// Événements de la carte
+map.on('moveend zoomend', () => {
+    const center = map.getCenter();
+    updateInfo(`Zoom: ${map.getZoom()}<br>Position: ${center.lat.toFixed(5)}, ${center.lng.toFixed(5)}`);
+});
+
+// Nettoyage à la fermeture
+window.onbeforeunload = function() {
+    clearInterval(updateInterval);
+    clearInterval(aisUpdateInterval);
+};
+
+function centerOnBoat() {
+if (shipMarker) {
+    const currentPosition = shipMarker.getLatLng();
+    const currentZoom = map.getZoom();
+    map.setView(currentPosition, currentZoom);}
 }
