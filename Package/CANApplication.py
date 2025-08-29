@@ -1,5 +1,7 @@
 import asyncio
 import os
+import platform
+import subprocess
 
 from PyQt5 import uic
 from PyQt5.QtCore import Qt
@@ -8,8 +10,6 @@ from PyQt5.QtGui import QIcon
 
 from Package.constante import *
 from Package.CAN_dll import CANDll
-import platform
-import subprocess
 from typing import Optional
 
 
