@@ -150,3 +150,11 @@
 .history-controls button:hover {
     background: #1976d2;
 }
+
+.persistent-popup {
+    z-index: 1000;
+}
+
+.persistent-popup .leaflet-popup-content-wrapper {
+    background: rgba(255, 255, 255, 0.9);
+}

@@ -6,12 +6,15 @@
     <link href="{{ url_for('static', filename='css/leaflet.css') }}" rel="stylesheet"/>
     <link href="{{ url_for('static', filename='css/mon.css') }}" rel="stylesheet"/>
     <link href="{{ url_for('static', filename='favicon.ico') }}" rel="icon" type="image/x-icon">
+    <script src="{{ url_for('static', filename='js/leaflet.js') }}"></script>
 </head>
 <body>
 
 <div id="map"></div>
 <div id="info"></div>
 <button class="center-button" onclick="centerOnBoat()" title="Centrer sur le bateau">👀</button>
+
+<script src="{{ url_for('static', filename='js/mon.js') }}"></script>
 
 <div class="legend">
     <label for="projectionTime">Temps de projection (minutes):</label>
@@ -20,14 +23,13 @@
     <div id="projectionInfo"></div>
 </div>
 
-<div class="legend" style="bottom: 120px;">
-    <button onclick="saveHistory()">Sauvegarder l'historique</button>
-    <button onclick="loadHistory()">Charger l'historique</button>
+
+<div class="legend" style="bottom: 125px;">
+    <button onclick="saveHistory()">Sauvegarder</button>
+    <button onclick="loadHistory()">Charger</button>
 </div>
 
 
-<script src="{{ url_for('static', filename='js/leaflet.js') }}"></script>
-<script src="{{ url_for('static', filename='js/mon.js') }}"></script>
 
 </body>
 </html>

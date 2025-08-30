@@ -1,3 +1,90 @@
+// Fonction pour afficher les messages
+function showMessage(message, type = 'info') {
+    // Créer l'élément de message
+    const messageElement = document.createElement('div');
+    messageElement.innerHTML = message;
+    messageElement.style.cssText = `
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background-color: white;
+        padding: 20px 30px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        z-index: 2000;
+        font-family: Arial, sans-serif;
+        max-width: 80%;
+        text-align: center;
+        animation: fadeIn 0.3s ease-out;
+        border: 2px solid #1e88e5;
+        font-size: 16px;
+        font-weight: bold;
+    `;
+
+    // Définir les styles selon le type de message
+    if (type === 'error') {
+        messageElement.style.backgroundColor = 'white';
+        messageElement.style.color = '#d32f2f';
+        messageElement.style.border = '2px solid #d32f2f';
+    } else if (type === 'success') {
+        messageElement.style.backgroundColor = 'white';
+        messageElement.style.color = '#2e7d32';
+        messageElement.style.border = '2px solid #2e7d32';
+    } else {
+        messageElement.style.backgroundColor = 'white';
+        messageElement.style.color = '#1e88e5';
+    }
+
+    // Ajouter au document
+    document.body.appendChild(messageElement);
+
+    // Supprimer après 3 secondes avec animation de fondu
+    setTimeout(() => {
+        messageElement.style.animation = 'fadeOut 0.3s ease-in';
+        setTimeout(() => {
+            messageElement.remove();
+        }, 300);
+    }, 3000);
+}
+
+let popupContent = '';
+let forceKeepOpen = false;
+
+// Créer le popup une seule fois
+const persistentPopup = L.popup({
+    autoClose: false,
+    closeOnClick: false,
+    closeButton: true
+});
+
+// Gestionnaire pour le bouton de fermeture du popup
+persistentPopup.on('remove', () => {
+    forceKeepOpen = false;
+});
+
+// Fonction de mise à jour du marqueur
+function updateMarkerInfo(data, cog, speed, distanceInNauticalMiles, projectionHours) {
+    if (!shipMarker) return;
+
+    // Mettre à jour le contenu
+    popupContent = `
+        <strong>HUAHINE</strong><br>
+        Position: ${data.latitude.toFixed(5)}, ${data.longitude.toFixed(5)}<br>
+        Cap: ${cog}°<br>
+        Vitesse: ${speed.toFixed(1)} nœuds<br>
+        Distance projetée: ${distanceInNauticalMiles.toFixed(1)} NM sur ${(projectionHours * 60).toFixed(0)} min
+    `;
+
+    // Mettre à jour le popup et l'ajouter à la carte si nécessaire
+    if (forceKeepOpen) {
+        persistentPopup
+            .setLatLng(shipMarker.getLatLng())
+            .setContent(popupContent)
+            .addTo(map);
+    }
+}
+
 const initialPosition = [43.2438, 5.3656];
 console.log('Position initiale:', initialPosition);
 
@@ -38,7 +125,7 @@ if (minutes >= 0 && minutes <= 1440) {
     // Mettre à jour tous les navires avec la nouvelle projection
     updateAISData();
 } else {
-    alert('Veuillez entrer une valeur inférieur à 1440 minutes soit 24 heures');
+    showMessage('Veuillez entrer une valeur inférieur à 1440 minutes soit 24 heures');
     input.value = projectionHours * 60;  // Reconversion en minutes pour l'affichage
 }
 }
@@ -371,14 +458,27 @@ async function updatePosition() {
         ]);
 
         // Mise à jour du popup
+        // Au début de votre script, déclarez une variable pour le popup
         if (shipMarker) {
-            shipMarker.bindPopup(`
-                <strong>HUAHINE</strong><br>
-                Position: ${data.latitude.toFixed(5)}, ${data.longitude.toFixed(5)}<br>
-                Cap: ${cog}°<br>
-                Vitesse: ${speed.toFixed(1)} nœuds<br>
-                Distance projetée: ${distanceInNauticalMiles.toFixed(1)} NM sur ${(projectionHours * 60).toFixed(0)} min
-            `);
+            shipMarker.off('click').on('click', function() {
+                forceKeepOpen = !forceKeepOpen;
+
+                if (forceKeepOpen) {
+                    // Créer et afficher le popup immédiatement lors du clic
+                    persistentPopup
+                        .setLatLng(shipMarker.getLatLng())
+                        .setContent(`
+                            <strong>HUAHINE</strong><br>
+                            Position: ${data.latitude.toFixed(5)}, ${data.longitude.toFixed(5)}<br>
+                            Cap: ${data.cog}°<br>
+                            Vitesse: ${data.speed.toFixed(1)} nœuds<br>
+                            Distance projetée: ${(data.speed * projectionHours).toFixed(1)} NM sur ${(projectionHours * 60).toFixed(0)} min
+                        `)
+                        .addTo(map);
+                } else {
+                    map.closePopup(persistentPopup);
+                }
+            });
         }
 
         updateInfo(`
@@ -410,8 +510,8 @@ function saveHistory() {
     })
     .then(response => response.json())
     .then(data => {
-        if (data.status ==+ "success") {
-            alert("Historique sauvegardé avec succès");
+        if (data.status === "success") {
+            showMessage("Historique sauvegardé avec succès","success");
         } else {
             alert("Erreur lors de la sauvegarde: " + data.message);
         }
@@ -425,28 +525,56 @@ function saveHistory() {
 // Fonction pour charger l'historique
 function loadHistory() {
     fetch('/load_history')
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`Erreur HTTP: ${response.status}`);
+        }
+        return response.json();
+    })
     .then(data => {
-        if (Array.isArray(data) && data.length > 0) {
-            positionHistory = data;
-            // Nettoyer la carte avant d'ajouter les nouveaux points
-            map.eachLayer((layer) => {
-                if (layer instanceof L.CircleMarker) {
-                    map.removeLayer(layer);
-                }
-            });
-            polyline.setLatLngs([]);
+        console.log("Données reçues:", data);
 
-            // Dessiner tous les points de l'historique
-            data.forEach(point => {
-                L.circleMarker([point.latitude, point.longitude], {
+        // Vérification approfondie des données
+        if (!Array.isArray(data)) {
+            throw new Error("Les données reçues ne sont pas un tableau");
+        }
+
+        // Vider le tableau existant au lieu de réassigner
+        positionHistory.length = 0;
+
+        // Nettoyage de la carte
+        polyline.setLatLngs([]);
+        map.eachLayer((layer) => {
+            if (layer instanceof L.CircleMarker || layer instanceof L.Polyline) {
+                map.removeLayer(layer);
+            }
+        });
+
+        // Ajouter les nouveaux points
+        data.forEach((point, index) => {
+            // Validation des données requises
+            if (!point.latitude || !point.longitude || !point.timestamp ||
+                typeof point.cog !== 'number' || typeof point.speed !== 'number') {
+                console.warn(`Point invalide à l'index ${index}:`, point);
+                return;
+            }
+
+            try {
+                // Ajout du point à l'historique
+                positionHistory.push(point);
+
+                // Création du marqueur
+                const marker = L.circleMarker([point.latitude, point.longitude], {
                     radius: 3,
                     fillColor: '#ff4444',
                     color: '#000',
                     weight: 1,
                     opacity: 0.8,
                     fillOpacity: 0.6
-                }).addTo(map).bindPopup(`
+                });
+
+                // Ajout du popup
+                marker.bindPopup(`
                     <strong>Position historique</strong><br>
                     Heure: ${new Date(point.timestamp).toLocaleTimeString()}<br>
                     Position: ${point.latitude.toFixed(5)}, ${point.longitude.toFixed(5)}<br>
@@ -454,17 +582,29 @@ function loadHistory() {
                     Vitesse: ${point.speed.toFixed(1)} nœuds
                 `);
 
-                // Mettre à jour la ligne de trace
+                // Ajout à la carte
+                marker.addTo(map);
+
+                // Mise à jour de la ligne de trace
                 polyline.addLatLng([point.latitude, point.longitude]);
-            });
-            alert("Historique chargé avec succès");
-        } else {
-            alert("Aucun historique trouvé");
+
+            } catch (err) {
+                console.error(`Erreur lors du traitement du point ${index}:`, err);
+            }
+        });
+
+        // Centrer la carte sur le dernier point si disponible
+        if (positionHistory.length > 0) {
+            const lastPoint = positionHistory[positionHistory.length - 1];
+            map.setView([lastPoint.latitude, lastPoint.longitude]);
+            showMessage("Historique chargé avec succès","success");
+            console.log("Historique chargé avec succès:", positionHistory.length, "points");
         }
+
     })
     .catch(error => {
-        console.error('Erreur de chargement:', error);
-        alert("Erreur lors du chargement de l'historique");
+        console.error('Erreur détaillée:', error);
+        alert(`Erreur lors du chargement de l'historique: ${error.message}`);
     });
 }
 
