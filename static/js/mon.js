@@ -48,6 +48,43 @@ function showMessage(message, type = 'info') {
     }, 3000);
 }
 
+// Créer le bouton de bascule
+// État initial des éléments d'information
+let isInfoVisible = true;
+
+// Fonction pour mettre à jour le style des éléments
+// Fonction pour mettre à jour le style des éléments
+function updateInfoVisibility(visible) {
+    const infoElements = document.querySelectorAll('#info, .legend, .history-controls, .leaflet-control-layers');
+    infoElements.forEach(element => {
+        if (visible) {
+            element.classList.remove('hidden');
+        } else {
+            element.classList.add('hidden');
+        }
+    });
+}
+
+// Gestionnaire d'événements pour le bouton de bascule
+document.getElementById('toggleInfoButton').addEventListener('click', function() {
+    // Inverser l'état
+    isInfoVisible = !isInfoVisible;
+
+    // Mettre à jour la visibilité des éléments
+    updateInfoVisibility(isInfoVisible);
+
+    // Ajouter une classe pour l'animation du bouton si désiré
+    this.classList.toggle('active');
+
+    // Mettre à jour le titre du bouton pour l'accessibilité
+    this.title = isInfoVisible ? "Masquer les informations" : "Afficher les informations";
+});
+
+// Initialisation de l'état au chargement de la page
+document.addEventListener('DOMContentLoaded', function() {
+    updateInfoVisibility(isInfoVisible);
+});
+
 let popupContent = '';
 let forceKeepOpen = false;
 

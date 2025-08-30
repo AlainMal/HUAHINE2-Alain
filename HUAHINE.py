@@ -846,7 +846,7 @@ coordinates: dict[str, float] = {
     "latitude": 43.243757,
     "longitude": 5.365660,
     "speed" : 6.0,
-    "cog" : 315.00
+    "cog" : 270.00
 }
 
 class CoordinatesManager:

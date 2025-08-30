@@ -9,7 +9,7 @@ cur_planette.execute("ATTACH DATABASE 'E:/Alain/cartesC.mbtiles' AS seamap")
 
 # Copie des tuiles de SeaMap (zoom 10-19) dans la base Navionic
 cur_planette.execute("""
-    INSERT OR REPLACE INTO tiles (zoom_level, tile_column, tile_row, tile_data)
+    REPLACE INTO tiles (zoom_level, tile_column, tile_row, tile_data)
     SELECT zoom_level, tile_column, tile_row, tile_data s
     FROM seamap.tiles
     WHERE zoom_level BETWEEN 10 AND 19
